@@ -1,0 +1,178 @@
+\section{Resolução do problema}
+\label{sec:criterios}
+
+Nesta parte se explicaram as funções objetivo para cumplir com cada critério sempre considerando $N$ elevadores, $M$ andares e o tempo de entrada e saída dos elevadores como 0.
+\subsection{Algoritmo}
+	O algoritmo implementado para a resolução do problema é um algoritmo construtivo basado no algoritmo GRASP (Greedy Randomized Adaptative Search Procedure) que utiliza uma função objetivo para encontrar uma solução aproximada ao problema. O pseudocódigo do algoritmo para este trabalho é o seguinte:
+	\begin{lstlisting}[ caption = Pseudocódigo do algoritmo , label = cod:pseudocod ]
+		|Para cada chamada nova faça|
+			|solução = vazio|
+			|Para um número de iterações|
+				|Para cada elevador $i$ , faça|
+					|opção = Calcular solução com elevador $i$|
+					|Adicionar opção a lista de candidatos possíveis|
+				|Fim Para|
+				|Ordenar a lista de candidatos possíveis comparando seus valores para a função objetivo|
+				|Reducir lista de candidatos possíveis com parámetro $alpha \in [0,1]$|
+				|Escolher um candidato aleatoriamente|
+				|Se a nova solução é melhor que solução até então conhecida|
+					|grave(solução)|
+				|Fim Se|
+			|Fim Para|
+		|Fim Para|
+	\end{lstlisting}
+	Neste caso o espaço de búsqueda será cada elevador, a função objetivo será definida para cada critério e o parámetro alpha vai reducir a lista de candidatos da seguinte forma:
+		\begin{lstlisting}[ caption = Redução de lista de candidatos , label = cod:candidatos ]
+			|$a = min( lista )$|
+			|$b = max( lista )$|
+			|${novaLista} = \{ c \in lista \mid {FO}( c ) \leq a + alpha * ( b - a ) \}$|
+		\end{lstlisting}
+		%Diseño de un algoritmo heurístico para el problema de localización p-mediana
+		%Universidad de las Américas Puebla
+		%Escuela de Ingeniería
+		%Departamento de Ingeniería Industrial y Textil
+		%Cholula, Puebla, México a 12 de mayo de 2004
+		%
+	
+	A continuação tem a implementação:
+	\begin{lstlisting}[ caption = Função heurística , label = cod:heuristic ]
+		private Building heuristicFunction( Building initialState , List<ElevatorCall> lstCalls ){
+			Building currentState = new Building( initialState ) ;
+			for( Integer i = 0 ; i < lstCalls.size() ; i++){
+				Building bestSol = null ;
+				ElevatorCall call = lstCalls.get( i ) ;
+				for( Integer j = 0 ; j < numIterations ; j++){
+					List<Building> options = new ArrayList<Building>() ;
+					for( Integer k = 0 ; k < currentState.getNumElevators() ; k++){
+						Elevator elevator = currentState.getElevators().get( k ) ;
+						if( elevator.getCurrentCapacity() == 0 ) continue ;
+						Building currentSol = new Building( currentState ) ;
+						currentSol.takeNewCall( k ,  call ) ; |\label{line:newcall}|
+						options.add( currentSol ) ;
+					}
+					if( options.isEmpty() ) continue ;
+					Collections.sort( options ) ;
+					options = filterList( options ) ;
+					Integer selectedIndex = randomBetween( 0 ,  options.size() ) ;
+					Building selection = new Building( options.get( selectedIndex ) ) ;
+					if( bestSol == null || selection.isBetterThan( bestSol ) )
+						bestSol = new Building( selection ) ;
+				}
+				currentState = new Building( bestSol ) ;
+			}
+			return currentState ;
+		}
+	\end{lstlisting}
+	
+	Além, para o cálculo do função objetivo para uma solução será executado o seguinte método:
+	\begin{lstlisting}[ caption = Calculo de custo para uma solução , label = cod:costsolution ]
+		private Integer getElevatorsCost(){
+			Integer cost = 0 ;
+			for( Elevator e : this.elevators )
+				cost += ( e.getCost() == Integer.MAX_VALUE ? 0 : e.getCost() ) ;
+			return cost ;
+		}
+	\end{lstlisting}
+	
+	A função ${getCost}$ terá a seguinte forma:
+	\begin{lstlisting}[ caption = Custo para um elevador , label = cod:costelevator ]
+		public Integer getCost(){
+			if( COST_BY_DISTANCE && COST_BY_WAITING_TIME ){
+				// Calc cost |\label{line:calcboth}|
+				return ;
+			}
+			if( Simulation.COST_BY_DISTANCE ){
+				// Calc cost |\label{line:calcdistance}|
+			}else if( Simulation.COST_BY_WAITING_TIME ){
+				// Calc cost |\label{line:calcwaiting}|
+			}
+		}
+	\end{lstlisting}
+	As linhas~\ref{line:calcdistance},~\ref{line:calcwaiting} e ~\ref{line:calcboth} seram explicadas em~\ref{subsec:distancia}, ~\ref{subsec:wait} e ~\ref{subsec:both} respectivamente.
+
+\subsection{Critério 1: Distancia}
+	\label{subsec:distancia}
+	\subsubsection{Descrição}
+		Redução do consumo de energia, que em este caso será medido pelo percurso total de cada elevador.
+	\subsubsection{Função}
+	\label{subsec:funcaoDist}
+		Como o que se quer é reducir a distancia total recorrida por os elevadores, temos que ver os movimentos que cada elevador faz.
+		\[
+			\sum_{i=1}^{N}( D_i = Distancia\ total\ recorrida\ por\ elevador\ i )
+		\]
+		Para calcular $D_i$ temos que ver os movimentos para cada $t$, mas para cada unidade de tempo, a máxima distancia recorrida vai ser 1, portanto não só temos que ver os movimentos actuais, se não também os seguintes. Então se pode definir $D_i$ da seguinte forma:
+		\[
+			D_i = {m_{stops}}_i + \sum_{t=0}^{T}{dist_t}_i
+		\]
+		Onde $m_{stops}$ é a suma dos movimentos que vai ter que fazer para terminar de deixar todas as pessoas em seus respetivos andares logo do tempo $T$.
+		Então a função objetivo para cumplir o critério será a seguinte:
+		\[
+			F.O = Min( \sum_{i=1}^{N}( {m_{stops}}_i + \sum_{t=0}^{T}{dist_t}_i ) )
+		\]
+	\subsubsection{Implementação}
+		Para o calculo da função objetivo não se tem um método definido no código, se não que este valor é atualizado cada vez que se executa a linha~\ref{line:newcall} de código~\ref{cod:heurstic} para algum objeto Building porque este é o método que adiciona a nova chamada na lista de paradas que tem que fazer um elevador e portanto modifica o percurso do elevador. As instruções que vão na linha~\ref{line:calcdistance} do código \ref{cod:costelevator} são:
+		\begin{lstlisting}[caption = Calculo de custo por percurso do elevador, label = cod:calcdistance]
+			Integer previous = this.currentFloor ;
+			this.cost = this.distanceMoved ;
+			for( ElevatorCall call : this.stops ){
+				this.cost += Math.abs( call.getIncomingFloor() - previous ) ;
+				previous = call.getIncomingFloor() ;
+			}
+		\end{lstlisting}
+		Onde ${currentFloor}$ é o actual andar onde o elevador está e ${distanceMoved}$ é a distancia recorrida até agora pelo elevador. Para cada chamada não atendida até esse momento se calcula os próximos movimentos do elevador e adiciona a seu custo.
+		
+ \subsection{Critério 2: Tempo espera}
+ 	\label{subsec:wait}
+	\subsubsection{Descrição}
+		Aumento do conforto e satisfação dos usuários que neste caso é medido pelo tempo de espera e pelo tempo dentro do elevador.
+	\subsubsection{Função}
+		Nesta vez se quer reducir o tempo de espera e o tempo no elevador, então podemos fazer o seguinte:
+		\[
+			\sum_{i=1}^{N} ( I_i + O_i )
+		\]
+		Onde $I_i = $ Tempo de espera total elevador $i$ e $O_i = $ Tempo total no elevador $i$.
+		A forma implementada para diferenciar os tempos de espera dos tempos no elevador é ter dois tipos de chamadas, uma para as chamadas que não tem sido atendidas e outra para as chamadas que não tem sido entregadas a seu destino.
+		Então podemos definir novamente:
+		\[
+			I_i = Suma( \{ x \mid x \in C_i \land x.in \neq x.out \} )
+		\]
+		\[
+			O_i = Suma( \{ x \mid x \in C_i \land x.in = x.out \} )
+		\]
+		Com $C_i$ o conjunto de chamadas do elevador $i$. \\
+		As chamadas com andar de ingresso (in) e andar destino (out) diferentes são as que suma $I_i$, e as que tem ingresso e destino igual são as que suma $O_i$.
+		Por tanto a função objetivo será:
+		\[
+			F.O. = Min( \sum_{i=1}^{N} ( I_i + O_i ) )
+		\]
+	\subsubsection{Implementação}
+		Da mesma forma que em~\ref{subsec:distancia} temos que as instruções que vão na linha~\ref{line:calcwaiting} do código \ref{cod:costelevator} são:
+		\begin{lstlisting}[caption = Calculo de custo por tempo de espera do elevador, label = cod:calcwaiting]
+			this.cost = this.waitingTime ;
+			for( ElevatorCall call : this.stops ){
+				this.cost += call.getWaitingTime() ;
+			}
+		\end{lstlisting}
+		Onde ${waitingTime}$ é o tempo de espera e tempo no elevador total de todas as chamadas que atendeu esse elevador. Além, se adiciona a seu custo o tempo de espera para todas as chamadas não atendidas até esse momento. Este valor é incrementado durante cada instante de tempo que pasa até o tempo $T$.
+		
+\subsection{Critério 3: Ambos critérios}
+	\label{subsec:both}
+	\subsubsection{Descrição}
+		Combinação dos dois critérios anteriores, ou seja, percurso total e tempo de espera.
+	\subsubsection{Função}
+		Neste caso só vamos ter que sumar ambas funções objetivo descritas em~\ref{subsec:distancia} e \ref{subsec:wait}. Por tanto a função neste caso será:
+		\[
+			F.O = Min( \sum_{i=1}^{N}( {m_{stops}}_i + \sum_{t=0}^{T}{dist_t}_i ) + \sum_{i=1}^{N} ( I_i + O_i ) )
+		\]
+	\subsubsection{Implementação}
+		Para o calculo da função objetivo esta vez só é necessário sumar ambos valores vistos em ~\ref{subsec:distancia} e \ref{subsec:wait}. Então as instruções que vão na linha~\ref{line:calcboth} do código \ref{cod:costelevator} são:
+		\begin{lstlisting}[caption = Calculo de custo por percurso e tempo de espera do elevador, label = cod:calcboth]
+			Integer previous = this.currentFloor ;
+			this.cost = this.distanceMoved + this.waitingTime ;
+			for( ElevatorCall call : this.stops ){
+				this.cost += Math.abs( call.getIncomingFloor() - previous ) ;
+				this.cost += call.getWaitingTime() ;
+				previous = call.getIncomingFloor() ;
+			}
+		\end{lstlisting}
+		Onde as variáveis são como em seções anteriores.
