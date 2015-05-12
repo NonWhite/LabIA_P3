@@ -1,0 +1,36 @@
+{
+	"domain_name" : "blocks" ,
+	"requirements" : [ ":strips" , ":typing" , ":equality" ] ,
+	"types" : [ "block" ] ,
+	"predicates" :
+		[ {
+				"name" : "on" ,
+				"parameters" : [ "x" , "block" , "y" , "block" ]
+			} ,
+			{
+				"name" : "ontable" ,
+				"parameters" : [ "x" , "block" ]
+			} ,
+			{
+				"name" : "clear" ,
+				"parameters" : [ "x" , "block" ]
+			} ,
+			{
+				"name" : "handempty" ,
+				"parameters" : []
+			} ,
+			{
+				"name" : "holding" ,
+				"parameters" : [ "x" , "block" ]
+			}
+		] ,
+	"actions" :
+		[ {
+				"name" : "pick-up" ,
+				"parameters" : [ "x" , "block" ] ,
+				"precondition" : [] ,
+				"effect" : [] ,
+				"raw" : "( :action pick-up:parameters ( ?x - block ):precondition ( and( clear ?x )( ontable ?x )( handempty )):effect ( and( not ( ontable ?x ) )( not ( clear ?x ) )( not ( handempty ) )( holding ?x )))"
+			}
+		]
+}
