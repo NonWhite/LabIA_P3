@@ -1,5 +1,6 @@
 from default import *
-import json
+import json as js
+import re
 
 # USELESS METHOD
 def extractProps( line ) :
@@ -9,15 +10,37 @@ def extractProps( line ) :
 	lst = [ x.split( PARAMETERS_DELIMITER ) for x in props ]
 	return lst
 
+def extractMatches( pattern , s ) :
+	lst = []
+	while True :
+		x = re.search( pattern , s )
+		if x :
+			lst.append( x.group( 0 ) )
+			lastpos = x.end()
+			s = s[ lastpos: ]
+		else :
+			break
+	return lst
+
+def convertToJson( filename ) :
+	s = open( filename , 'r' ).read()
+	for ( original , replaceable ) in REPLACEABLE_WORDS.iteritems() :
+		s = s.replace( original , replaceable )
+	lst = {}
+	for ( pattern , key ) in EXTRACT_RULES.iteritems() :
+		matches = extractMatches( pattern , s )
+		lst[ key ] = curateFunctions[ key ]( matches )
+	return lst
+
 def parserStripsFile( filename ) :
-	f = open( filename , 'r' )
-	x = f.read()
-	x = x.replace( '(' , '{' )
-	x = x.replace( ')' , '}' )
-	outfile = open( 'e.json' , 'w' )
-	json.dump( x , outfile )
-	return 'AC'
+	json = convertToJson( filename )
+	otherfilename = filename.replace( 'txt' , 'json' )
+	with open( otherfilename , 'w' ) as outfile :
+		js.dump( json , outfile , indent = 4 , sort_keys = True )
+	return json
 
 if __name__ == "__main__" :
-	f = 'test.in'
-	print parserStripsFile( f )
+	f = 'b.txt'
+	lst = parserStripsFile( f )
+	print lst
+	#for ( key , value ) in lst.iteritems() : print ( key , value )
