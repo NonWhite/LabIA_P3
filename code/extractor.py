@@ -77,10 +77,11 @@ def parseInformation( s , regex ) :
 	if resp[ 0 ].find( 'and ' ) >= 0 :
 		resp[ 0 ] = resp[ 0 ].replace( '(and' , '' ).replace( '( and' , '' )
 		resp.insert( 0 , '( and' )
-	if resp[ len( resp ) - 1 ].strip() == ')' : resp.pop( len( resp ) - 1 )
+	while resp[ len( resp ) - 1 ].strip() == ')' : resp.pop( len( resp ) - 1 )
 	if len( resp ) == 1 :
 		resp = { 'prop' : 'none' , 'terms' : [ parseString( resp[ 0 ] ) ] }
 	else :
+		resp.append( ')' )
 		resp = { 'prop' : resp[ 0 ].replace( '(' , '' ).replace( ' ' , '' ) , 'terms' : [ parseString( x ) for x in resp[ 1:-1 ] ] }
 	return resp
 

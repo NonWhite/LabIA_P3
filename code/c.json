@@ -11,6 +11,14 @@
                             "d_new"
                         ], 
                         "state": true
+                    }, 
+                    {
+                        "name": "pointing", 
+                        "parameters": [
+                            "s", 
+                            "d_prev"
+                        ], 
+                        "state": false
                     }
                 ]
             }, 
@@ -39,6 +47,14 @@
                             "d_prev"
                         ], 
                         "state": true
+                    }, 
+                    {
+                        "name": "=", 
+                        "parameters": [
+                            "d_new", 
+                            "d_prev"
+                        ], 
+                        "state": false
                     }
                 ]
             }
@@ -58,6 +74,13 @@
                         "name": "calibrated", 
                         "parameters": [
                             "i"
+                        ], 
+                        "state": false
+                    }, 
+                    {
+                        "name": "power_avail", 
+                        "parameters": [
+                            "s"
                         ], 
                         "state": false
                     }
@@ -84,6 +107,13 @@
                             "s"
                         ], 
                         "state": true
+                    }, 
+                    {
+                        "name": "power_avail", 
+                        "parameters": [
+                            "s"
+                        ], 
+                        "state": true
                     }
                 ]
             }
@@ -98,6 +128,13 @@
                             "i"
                         ], 
                         "state": false
+                    }, 
+                    {
+                        "name": "power_avail", 
+                        "parameters": [
+                            "s"
+                        ], 
+                        "state": true
                     }
                 ]
             }, 
@@ -120,6 +157,13 @@
                         "parameters": [
                             "i", 
                             "s"
+                        ], 
+                        "state": true
+                    }, 
+                    {
+                        "name": "power_on", 
+                        "parameters": [
+                            "i"
                         ], 
                         "state": true
                     }
@@ -178,6 +222,13 @@
                         "parameters": [
                             "s", 
                             "d"
+                        ], 
+                        "state": true
+                    }, 
+                    {
+                        "name": "power_on", 
+                        "parameters": [
+                            "i"
                         ], 
                         "state": true
                     }
@@ -255,6 +306,13 @@
                         "parameters": [
                             "s", 
                             "d"
+                        ], 
+                        "state": true
+                    }, 
+                    {
+                        "name": "power_on", 
+                        "parameters": [
+                            "i"
                         ], 
                         "state": true
                     }
