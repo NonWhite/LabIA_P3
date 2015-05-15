@@ -42,7 +42,7 @@ def parsePredicateString( s ) :
 	lst = s.strip()[ 1:-1 ].strip().split( '?' )
 	resp = {}
 	resp[ 'name' ] = lst[ 0 ].strip()
-	resp[ 'parameters' ] = [ r.split( ' - ' ) for r in lst[ 1: ] ]
+	resp[ 'parameters' ] = [ r.strip().split( ' - ' ) for r in lst[ 1: ] ]
 	return resp
 
 def extractPredicates( lst ) :
