@@ -92,6 +92,7 @@ def extractActions( lst ) :
 		name = re.search( '.*\n' , act ).group( 0 ).replace( '\n' , '' ).replace( '\r' , '' )
 		parameters = re.search( '.*parameters.*\(.*\)' , act ).group( 0 ).replace( '\t' , '' ).replace( 'parameters' , '' ).strip()[ 1:-1 ].strip()
 		parameters = [ r.split( ' - ' ) for r in parameters.split( '?' )[ 1: ] ]
+		parameters = [ [ r[ 0 ].strip() , r[ 1 ].strip() ] for r in parameters ]
 		precondition = parseInformation( act , '.*precondition(.|\n)[^:]*\)' )
 		effect = parseInformation( act , '.*effect(.|\n)*\)' )
 		dictAct = { 'name' : name , 'parameters': parameters , 'precondition' : precondition , 'effect' : effect }

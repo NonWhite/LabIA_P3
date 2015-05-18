@@ -26,11 +26,11 @@
             "parameters": [
                 [
                     "s", 
-                    "satellite "
+                    "satellite"
                 ], 
                 [
                     "d_new", 
-                    "direction "
+                    "direction"
                 ], 
                 [
                     "d_prev", 
@@ -90,7 +90,7 @@
             "parameters": [
                 [
                     "i", 
-                    "instrument "
+                    "instrument"
                 ], 
                 [
                     "s", 
@@ -142,7 +142,7 @@
             "parameters": [
                 [
                     "i", 
-                    "instrument "
+                    "instrument"
                 ], 
                 [
                     "s", 
@@ -187,11 +187,11 @@
             "parameters": [
                 [
                     "s", 
-                    "satellite "
+                    "satellite"
                 ], 
                 [
                     "i", 
-                    "instrument "
+                    "instrument"
                 ], 
                 [
                     "d", 
@@ -253,15 +253,15 @@
             "parameters": [
                 [
                     "s", 
-                    "satellite "
+                    "satellite"
                 ], 
                 [
                     "d", 
-                    "direction "
+                    "direction"
                 ], 
                 [
                     "i", 
-                    "instrument "
+                    "instrument"
                 ], 
                 [
                     "m", 
