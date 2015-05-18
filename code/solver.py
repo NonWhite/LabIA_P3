@@ -169,7 +169,7 @@ class StripsSolver :
 
 	# Convert propositions in CNF File
 	def generateCNF( self ) :
-		filename = "%s%s%s.out" % ( self.domain[ 'domain_name' ] , VAR_DELIMITER , self.steps )
+		filename = "%s%s%s.cnf" % ( self.domain[ 'domain_name' ] , VAR_DELIMITER , self.steps )
 		numvars = len( self.predicates ) + self.total * self.steps
 		numclauses = len( self.implications ) + len( self.start ) + len( self.goal )
 		f = open( filename , 'w' )
@@ -197,13 +197,20 @@ class StripsSolver :
 
 		return filename
 	
+	def isSatisfiable( self , filename ) :
+		with open( filename , 'r' ) as f :
+			txt = f.read()
+			if txt.find( 'SATISFIABLE' ) : return True
+		return False
+
 	# Process the CNF with SAT Solver
 	def getStateFromCNF( self , cnffile ) :
 		print "Solving %s" % cnffile
 		satsolver = [ './toysat' , cnffile ]
-		outfile = open( 'OUT' , 'w' )
+		outname = cnffile.replace( '.cnf' , '.out' )
+		outfile = open( outname , 'w' )
 		call( satsolver , stdout = outfile )
-		return len( self.implications ) > 0
+		return self.isSatisfiable( outname )
 
 	# Return if current state is a solution
 	def isSolved( self ) :
@@ -247,9 +254,15 @@ class StripsSolver :
 		print "#IMPLICATIONS = %s" % len( self.implications )
 
 	def process( self ) :
+		while True :
+			self.addAction()
+			if self.isSolved() : break
+		return True
+		'''
 		while not self.isSolved() :
 			self.addAction()
 		return True
+		'''
 
 	def solve( self , situationfile ) :
 		print "Pre-procesando informacion en %s" % situationfile
