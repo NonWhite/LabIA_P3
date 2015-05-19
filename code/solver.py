@@ -174,13 +174,18 @@ class StripsSolver :
 		return ID
 	
 	def getProposition( self , ID ) :
-		pos = ID % self.total
+		isnegation = False
+		if ID < 0 :
+			isnegation = True
+			ID = -ID
+		pos = ( ID % self.total ) - 1
 		resp = ''
-		if pos > len( self.predicates ) :
+		if pos >= len( self.predicates ) :
 			pos -= len( self.predicates )
 			resp = self.actions[ pos ][ 'name' ]
 		else :
 			resp = self.predicates[ pos ]
+		resp = ( "~" if isnegation else "" ) + resp
 		return resp
 
 	# Convert propositions in CNF File
@@ -289,13 +294,25 @@ class StripsSolver :
 	def extractSolution( self ) :
 		print "Extracting solution for %s" % self.domain[ 'domain_name' ]
 		filename = "%s/%s_%s.out" % ( self.directory , self.domain[ 'domain_name' ] , self.steps )
-		sol = []
 		with open( filename , 'r' ) as f :
+			sol = []
 			for line in f :
 				if not line.startswith( 'v' ) : continue
 				sp = line.split()[ 1: ]
-				sol.extend( [ self.getProposition( w ) for w in sp ] )
-		return sol
+				if '0' in sp : break
+				sol.extend( [ self.getProposition( int( w ) ) for w in sp ] )
+			idx = 0
+			resp = []
+			for k in range( self.steps + 1 ) :
+				count = 0
+				t = []
+				while idx < len( sol ) and count < self.total :
+					t.append( sol[ idx ] )
+					idx += 1
+					count += 1
+				resp.append( t )
+		for x in resp : print x
+		return resp
 
 	def solve( self , situationfile ) :
 		print "Pre-processing information in %s" % situationfile
