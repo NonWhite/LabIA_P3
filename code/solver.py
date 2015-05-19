@@ -85,6 +85,7 @@ class StripsSolver :
 
 	def preprocess( self , situationfile ) :
 		self.getStartAndGoal( situationfile )
+		self.directory = os.path.dirname( situationfile )
 		# Get how many variables has for each type (extracted from start and goal)
 		for pred in self.start :
 			name = pred[ 'name' ]
@@ -172,7 +173,7 @@ class StripsSolver :
 
 	# Convert propositions in CNF File
 	def generateCNF( self ) :
-		filename = "%s%s%s.cnf" % ( self.domain[ 'domain_name' ] , VAR_DELIMITER , self.steps )
+		filename = "%s/%s%s%s.cnf" % ( self.directory , self.domain[ 'domain_name' ] , VAR_DELIMITER , self.steps )
 		numvars = len( self.predicates ) + self.total * self.steps
 		numclauses = len( self.implications ) + len( self.start ) + len( self.goal )
 		f = open( filename , 'w' )
