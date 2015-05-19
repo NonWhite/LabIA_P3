@@ -172,6 +172,16 @@ class StripsSolver :
 		ID = pos + time * self.total
 		if not prop[ 'state' ] : ID = -ID
 		return ID
+	
+	def getProposition( self , ID ) :
+		pos = ID % self.total
+		resp = ''
+		if pos > len( self.predicates ) :
+			pos -= len( self.predicates )
+			resp = self.actions[ pos ][ 'name' ]
+		else :
+			resp = self.predicates[ pos ]
+		return resp
 
 	# Convert propositions in CNF File
 	def generateCNF( self ) :
@@ -271,17 +281,27 @@ class StripsSolver :
 		while True :
 			self.addAction()
 			if self.isSolved() : break
-		return True
 		'''
 		while not self.isSolved() :
 			self.addAction()
-		return True
 		'''
+	
+	def extractSolution( self ) :
+		print "Extracting solution for %s" % self.domain[ 'domain_name' ]
+		filename = "%s/%s_%s.out" % ( self.directory , self.domain[ 'domain_name' ] , self.steps )
+		sol = []
+		with open( filename , 'r' ) as f :
+			for line in f :
+				if not line.startswith( 'v' ) : continue
+				sp = line.split()[ 1: ]
+				sol.extend( [ getProposition( w ) for w in sp ] )
+		return sol
 
 	def solve( self , situationfile ) :
-		print "Pre-procesando informacion en %s" % situationfile
+		print "Pre-processing information in %s" % situationfile
 		self.preprocess( situationfile )
-		return self.process()
+		self.process()
+		return self.extractSolution()
 
 if __name__ == "__main__" :
 	if len( sys.argv ) >= 3 :
