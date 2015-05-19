@@ -2,6 +2,7 @@ import sys
 from converter import *
 from utils import *
 from subprocess import call
+from copy import deepcopy as copy
 
 VAR_DELIMITER = '_'
 DEBUG = False
@@ -45,10 +46,17 @@ class StripsSolver :
 		if idvar == len( prop[ 'parameters' ] ) : return [ prop ]
 		lst = []
 		( varname , typ ) = prop[ 'parameters' ][ idvar ]
+		'''
+		if prop[ 'name' ].startswith( 'pick-up' ) :
+			print prop
+			print ( varname , typ )
+			print variables[ typ ]
+		'''
 		name = prop[ 'name' ]
 		for value in variables[ typ ] :
 			if value in name.split( VAR_DELIMITER ) : continue
-			current = prop.copy()
+			#current = prop.copy()
+			current = copy( prop )
 			current[ 'name' ] += VAR_DELIMITER + value
 			if isAction :
 				for p in current[ 'precondition' ] :
@@ -73,7 +81,7 @@ class StripsSolver :
 			for ef in prop[ 'effect' ] :
 				for params in ef[ 'parameters' ] :
 					ef[ 'name' ] += VAR_DELIMITER + '?' + params
-		lst = self.addVariable( prop , variables , isAction )
+		lst = self.addVariable( prop.copy() , variables , isAction )
 		if not isAction :
 			for i in range( len( lst ) ) :
 				lst[ i ] = lst[ i ][ 'name' ]
@@ -200,24 +208,26 @@ class StripsSolver :
 		for prop in self.start :
 			if 'time' not in prop : prop[ 'time' ] = 0
 			if 'isaction' not in prop : prop[ 'isaction' ] = False
-			if DEBUG : f.write( "%s%s\n" % ( "NOT " if not prop[ 'state' ] else "" , prop[ 'name' ] ) )
+			if DEBUG : f.write( "%s%s(0)\n" % ( "NOT " if not prop[ 'state' ] else "" , prop[ 'name' ] ) )
 			else : f.write( "%s 0\n" % self.getID( prop ) )
 		# Add all axioms
 		for imp in self.implications :
 			left = imp[ 'left' ]
 			right = imp[ 'right' ]
+			if right == None : print "========================%s" % left
 			factor = ( 1 if right == None else -1 )
 			for ifc in left :
-				if DEBUG : f.write( "%s%s AND " % ( "NOT " if not ifc[ 'state' ] else "" , ifc[ 'name' ] ) )
+				if DEBUG : f.write( "%s%s(%s) %s" % ( "NOT " if not ifc[ 'state' ] else "" , ifc[ 'name' ] , ifc[ 'time' ] , "AND " if len( left ) > 1 else "" ) )
 				else : f.write( "%s " % ( factor * self.getID( ifc ) ) )
 			if DEBUG :
-				if right != None : f.write( " => %s%s\n" % ( "NOT " if not right[ 'state' ] else "" , right[ 'name' ] ) )
+				if right != None : f.write( " => %s%s(%s)\n" % ( "NOT " if not right[ 'state' ] else "" , right[ 'name' ] , right[ 'time' ] ) )
+				else : f.write( "\n" )
 			else : f.write( "%s 0\n" % self.getID( right ) )
 		# Add goal propositions
 		for prop in self.goal :
 			prop[ 'time' ] = self.steps
 			prop[ 'isaction' ] = False
-			if DEBUG : f.write( "%s%s\n" % ( "NOT " if not prop[ 'state' ] else "" , prop[ 'name' ] ) )
+			if DEBUG : f.write( "%s%s(%s)\n" % ( "NOT " if not prop[ 'state' ] else "" , prop[ 'name' ] , self.steps ) )
 			else : f.write( "%s 0\n" % self.getID( prop ) )
 
 		return filename
@@ -275,7 +285,8 @@ class StripsSolver :
 		# Add axioms of not paralelism
 		for i in range( len( self.actions ) ) :
 			left = [ formProposition( self.actions[ i ][ 'name' ] , True , self.steps , True ) ]
-			for j in range( i + 1 , len( self.actions ) ) :
+			for j in range( len( self.actions ) ) :
+				if i == j : continue
 				right = formProposition( self.actions[ j ][ 'name' ] , False , self.steps , True )
 				self.implications.append( { 'left' : left , 'right' : right } )
 
@@ -307,7 +318,7 @@ class StripsSolver :
 				count = 0
 				t = []
 				while idx < len( sol ) and count < self.total :
-					t.append( sol[ idx ] )
+					if sol[ idx ].find( '~' ) < 0 : t.append( sol[ idx ] )
 					idx += 1
 					count += 1
 				resp.append( t )

@@ -1,4 +1,4 @@
-c 2015-05-19T01:31:52-0300
+c 2015-05-19T13:30:37-0300
 c arch = x86_64
 c os = linux
 c compiler = ghc 7.6
@@ -35,26 +35,26 @@ c   unbounded-delays-0.1.0.7
 c   unordered-containers-0.2.3.0
 c   vector-space-0.8.6
 c command line = ["+RTS","-H1G","-K1G","-RTS","--search=bcd2","--sat","blocks/blocks_1.cnf"]
-c use --random-gen="537203065 2147483398" option to reproduce the execution
-c #vars 28
-c #constraints 142
+c use --random-gen="875263510 2147483398" option to reproduce the execution
+c #vars 30
+c #constraints 179
 c Solving starts ...
 c ============================[ Search Statistics ]============================
 c  Time | Restart | Decision | Conflict |      LEARNT     | Fixed    | Removed 
 c       |         |          |          |    Limit     GC | Var      | Constra 
 c =============================================================================
-c  0.0s |       0 |        0 |        0 |       16      0 |       17 |        0
-c  0.0s |       0 |        8 |        1 |       16      0 |       18 |        2
+c  0.0s |       0 |        0 |        0 |       16      0 |       18 |        0
+c  0.0s |       0 |       10 |        1 |       16      0 |       19 |        2
 c #cpu_time = 0.000s
 c #wall_clock_time = 0.000s
-c #decision = 8
+c #decision = 10
 c #random_decision = 0
 c #conflict = 1
 c #restart = 0
 s SATISFIABLE
 v -1 -2 3 4 5 6 7 -8 -9 -10
-v -11 12 -13 -14 -15 -16 -17 -18 19 20
-v -21 22 -23 24 -25 26 27 28
+v -11 -12 13 -14 -15 -16 -17 -18 -19 20
+v 21 22 -23 24 -25 -26 27 28 29 30
 v 0
-c total CPU time = 0.007s
-c total wall clock time = 0.022s
+c total CPU time = 0.010s
+c total wall clock time = 0.029s
