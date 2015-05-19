@@ -1,4 +1,5 @@
 import sys
+import time
 from converter import *
 from utils import *
 from subprocess import call
@@ -321,20 +322,44 @@ class StripsSolver :
 			resp = []
 			for k in range( self.steps + 1 ) :
 				count = 0
-				t = []
+				t = {}
 				while idx < len( sol ) and count < self.total :
-					if sol[ idx ].find( '~' ) < 0 : t.append( sol[ idx ] )
+					if sol[ idx ].find( '~' ) < 0 :
+						if sol[ idx ] in getAllValues( self.actions , 'name' ) : t[ 'action' ] = sol[ idx ]
+						else :
+							if 'props' not in t : t[ 'props' ] = []
+							t[ 'props' ].append( sol[ idx ] )
 					idx += 1
 					count += 1
 				resp.append( t )
-		for x in resp : print x
-		return resp
+		numvars = len( self.predicates ) + self.total * self.steps
+		numclauses = len( self.implications ) + len( self.start ) + len( self.goal )
+		return ( resp , numvars , numclauses ) 
 
 	def solve( self , situationfile ) :
+		start_time = time.time()
 		print "Pre-processing information in %s" % situationfile
 		self.preprocess( situationfile )
 		self.process()
-		return self.extractSolution()
+		( solution , numvars , numclauses ) = self.extractSolution()
+		outfile = situationfile.replace( '.in' , '.out' )
+		elapsed_time = time.time() - start_time
+		self.saveSolution( solution , numvars , numclauses , elapsed_time , outfile )
+	
+	def saveSolution( self , sol , numvars , numclauses , elapsed_time , outfile ) :
+		with open( outfile , 'w' ) as f :
+			f.write( "TIME = %.2f\n" % elapsed_time )
+			f.write( "PROPS = %s\n" % numvars )
+			f.write( "CLAUSES = %s\n" % numclauses )
+			f.write( "SIZE = %s\n" % ( len( sol ) - 1 ) )
+			f.write( "SOLUTION\n" )
+			for i in range( len( sol ) ) :
+				for k in range( len( sol[ i ][ 'props' ] ) ) :
+					if k : f.write( ';' )
+					f.write( "%s" % sol[ i ][ 'props' ][ k ] )
+				f.write( '\n' )
+				if i < len( sol ) - 1 :
+					f.write( "%s\n" % sol[ i ][ 'action' ] )
 
 if __name__ == "__main__" :
 	if len( sys.argv ) >= 3 :
