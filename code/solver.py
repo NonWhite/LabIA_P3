@@ -110,11 +110,6 @@ class StripsSolver :
 		# Evaluate actions with all variables detected
 		for act in self.domain[ 'actions' ] :
 			self.actions.extend( self.evaluateWith( act.copy() , isAction = True ) )
-		# TODO
-		for act in self.actions :
-			act[ 'persistence' ] = []
-		#print " ======== ACTIONS ======== "
-		#for x in self.actions : print x
 		# Get full description for start propositions
 		for i in range( len( self.start ) ) :
 			name = self.start[ i ][ 'name' ]
@@ -146,6 +141,14 @@ class StripsSolver :
 		self.idpredicates = 1
 		self.idactions = len( self.predicates ) + 1
 		self.total = len( self.predicates ) + len( self.actions )
+		# Get all predicates that are not affected by every action
+		for act in self.actions :
+			act[ 'persistence' ] = []
+			for pred in self.predicates :
+				if pred not in getAllValues( act[ 'effect' ] , 'name' ) :
+					act[ 'persistence' ].append( { 'name' : pred , 'state' : True } )
+		#print " ======== ACTIONS ======== "
+		#for x in self.actions : print x
 
 		print "#PREDICATES = %s" % len( self.predicates )
 		print "#ACTIONS = %s" % len( self.actions )
@@ -209,8 +212,9 @@ class StripsSolver :
 		satsolver = [ './toysat' , cnffile ]
 		outname = cnffile.replace( '.cnf' , '.out' )
 		outfile = open( outname , 'w' )
-		call( satsolver , stdout = outfile )
-		return self.isSatisfiable( outname )
+		ret = call( satsolver , stdout = outfile )
+		if ret == 0 : return self.isSatisfiable( outname )
+		return len( self.implications ) > 0
 
 	# Return if current state is a solution
 	def isSolved( self ) :
