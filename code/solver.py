@@ -209,26 +209,25 @@ class StripsSolver :
 			if 'time' not in prop : prop[ 'time' ] = 0
 			if 'isaction' not in prop : prop[ 'isaction' ] = False
 			if DEBUG : f.write( "%s%s(0)\n" % ( "NOT " if not prop[ 'state' ] else "" , prop[ 'name' ] ) )
-			else : f.write( "%s 0\n" % self.getID( prop ) )
+			f.write( "%s 0\n" % self.getID( prop ) )
 		# Add all axioms
 		for imp in self.implications :
 			left = imp[ 'left' ]
 			right = imp[ 'right' ]
-			if right == None : print "========================%s" % left
 			factor = ( 1 if right == None else -1 )
 			for ifc in left :
 				if DEBUG : f.write( "%s%s(%s) %s" % ( "NOT " if not ifc[ 'state' ] else "" , ifc[ 'name' ] , ifc[ 'time' ] , "AND " if len( left ) > 1 else "" ) )
-				else : f.write( "%s " % ( factor * self.getID( ifc ) ) )
+				f.write( "%s " % ( factor * self.getID( ifc ) ) )
 			if DEBUG :
 				if right != None : f.write( " => %s%s(%s)\n" % ( "NOT " if not right[ 'state' ] else "" , right[ 'name' ] , right[ 'time' ] ) )
 				else : f.write( "\n" )
-			else : f.write( "%s 0\n" % self.getID( right ) )
+			f.write( "%s 0\n" % self.getID( right ) )
 		# Add goal propositions
 		for prop in self.goal :
 			prop[ 'time' ] = self.steps
 			prop[ 'isaction' ] = False
 			if DEBUG : f.write( "%s%s(%s)\n" % ( "NOT " if not prop[ 'state' ] else "" , prop[ 'name' ] , self.steps ) )
-			else : f.write( "%s 0\n" % self.getID( prop ) )
+			f.write( "%s 0\n" % self.getID( prop ) )
 
 		return filename
 	
@@ -257,7 +256,7 @@ class StripsSolver :
 		return self.getStateFromCNF( cnffile )
 	
 	def addAction( self ) :
-		# Add axioms of preconditios
+		# Add axioms of preconditions
 		for act in self.actions :
 			left = [ formProposition( act[ 'name' ] , True , self.steps , True ) ]
 			for pre in act[ 'precondition' ] :
@@ -276,19 +275,25 @@ class StripsSolver :
 							formProposition( pers[ 'name' ] , True , self.steps , False ) ]
 				right = formProposition( pers[ 'name' ] , True , self.steps + 1 , False )
 				self.implications.append( { 'left' : left , 'right' : right } )
+				left = [ formProposition( act[ 'name' ] , True , self.steps , True ) , \
+							formProposition( pers[ 'name' ] , False , self.steps , False ) ]
+				right = formProposition( pers[ 'name' ] , False , self.steps + 1 , False )
+				self.implications.append( { 'left' : left , 'right' : right } )
 		# Add axioms of continuity
 		left = []
 		for act in self.actions :
 			left.append( formProposition( act[ 'name' ] , True , self.steps , True ) )
-		right = None
-		self.implications.append( { 'left' : left , 'right' : right } )
+		self.implications.append( { 'left' : left , 'right' : None } )
 		# Add axioms of not paralelism
 		for i in range( len( self.actions ) ) :
-			left = [ formProposition( self.actions[ i ][ 'name' ] , True , self.steps , True ) ]
+			left1 = [ formProposition( self.actions[ i ][ 'name' ] , True , self.steps , True ) ]
+			#left2 = [ formProposition( self.actions[ i ][ 'name' ] , False , self.steps , True ) ]
 			for j in range( len( self.actions ) ) :
 				if i == j : continue
-				right = formProposition( self.actions[ j ][ 'name' ] , False , self.steps , True )
-				self.implications.append( { 'left' : left , 'right' : right } )
+				right1 = formProposition( self.actions[ j ][ 'name' ] , False , self.steps , True )
+				#right2 = formProposition( self.actions[ j ][ 'name' ] , True , self.steps , True )
+				self.implications.append( { 'left' : left1 , 'right' : right1 } )
+				#self.implications.append( { 'left' : left2 , 'right' : right2 } )
 
 		self.steps += 1
 		print "#IMPLICATIONS = %s" % len( self.implications )
