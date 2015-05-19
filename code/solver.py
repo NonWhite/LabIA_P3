@@ -294,7 +294,7 @@ class StripsSolver :
 			for line in f :
 				if not line.startswith( 'v' ) : continue
 				sp = line.split()[ 1: ]
-				sol.extend( [ getProposition( w ) for w in sp ] )
+				sol.extend( [ self.getProposition( w ) for w in sp ] )
 		return sol
 
 	def solve( self , situationfile ) :
