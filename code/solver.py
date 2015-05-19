@@ -202,8 +202,11 @@ class StripsSolver :
 	
 	def isSatisfiable( self , filename ) :
 		with open( filename , 'r' ) as f :
-			txt = f.read()
-			if txt.find( 'SATISFIABLE' ) : return True
+			for line in f :
+				if not line.startswith( 's' ) : continue
+				words = line.split()
+				for s in words :
+					if s.strip() == 'SATISFIABLE' : return True
 		return False
 
 	# Process the CNF with SAT Solver
