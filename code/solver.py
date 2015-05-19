@@ -182,21 +182,24 @@ class StripsSolver :
 		for prop in self.start :
 			if 'time' not in prop : prop[ 'time' ] = 0
 			if 'isaction' not in prop : prop[ 'isaction' ] = False
-			f.write( "%s 0\n" % self.getID( prop ) )
+			f.write( "%s\n" % prop[ 'name' ] )
+			#f.write( "%s 0\n" % self.getID( prop ) )
 		# Add all axioms
 		for imp in self.implications :
 			left = imp[ 'left' ]
 			right = imp[ 'right' ]
 			factor = ( 1 if right == None else -1 )
-			#f.write( "%s => %s\n" % ( left , right ) )
 			for ifc in left :
-				f.write( "%s " % ( factor * self.getID( ifc ) ) )
-			f.write( "%s 0\n" % self.getID( right ) )
+				#f.write( "%s " % ( factor * self.getID( ifc ) ) )
+				f.write( "%s AND " % ifc[ 'name' ] )
+			#f.write( "%s 0\n" % self.getID( right ) )
+			f.write( " => %s\n" , right[ 'name' ] )
 		# Add goal propositions
 		for prop in self.goal :
 			prop[ 'time' ] = self.steps
 			prop[ 'isaction' ] = False
-			f.write( "%s 0\n" % self.getID( prop ) )
+			#f.write( "%s 0\n" % self.getID( prop ) )
+			f.write( "%s\n" % prop[ 'name' ] )
 
 		return filename
 	
