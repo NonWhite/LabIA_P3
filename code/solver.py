@@ -4,6 +4,7 @@ from utils import *
 from subprocess import call
 
 VAR_DELIMITER = '_'
+DEBUG = False
 
 class StripsSolver :
 	def __init__( self , stripsfile ) :
@@ -19,6 +20,7 @@ class StripsSolver :
 		for i in range( len( props ) ) :
 			name = self.searchInDomain( props[ i ] )[ 'name' ]
 			lst = props[ i ][ len( name ) + 1 : ].split( '_' )
+			lst = [ w for w in lst if len( w ) > 0 ]
 			props[ i ] = { 'name' : name , 'parameters' : lst }
 		return props
 
@@ -183,24 +185,25 @@ class StripsSolver :
 		for prop in self.start :
 			if 'time' not in prop : prop[ 'time' ] = 0
 			if 'isaction' not in prop : prop[ 'isaction' ] = False
-			f.write( "%s\n" % prop[ 'name' ] )
-			#f.write( "%s 0\n" % self.getID( prop ) )
+			if DEBUG : f.write( "%s%s\n" % ( "NOT " if not prop[ 'state' ] else "" , prop[ 'name' ] ) )
+			else : f.write( "%s 0\n" % self.getID( prop ) )
 		# Add all axioms
 		for imp in self.implications :
 			left = imp[ 'left' ]
 			right = imp[ 'right' ]
 			factor = ( 1 if right == None else -1 )
 			for ifc in left :
-				#f.write( "%s " % ( factor * self.getID( ifc ) ) )
-				f.write( "%s AND " % ifc[ 'name' ] )
-			#f.write( "%s 0\n" % self.getID( right ) )
-			f.write( " => %s\n" , right[ 'name' ] )
+				if DEBUG : f.write( "%s%s AND " % ( "NOT " if not ifc[ 'state' ] else "" , ifc[ 'name' ] ) )
+				else : f.write( "%s " % ( factor * self.getID( ifc ) ) )
+			if DEBUG :
+				if right != None : f.write( " => %s%s\n" % ( "NOT " if not right[ 'state' ] else "" , right[ 'name' ] ) )
+			else : f.write( "%s 0\n" % self.getID( right ) )
 		# Add goal propositions
 		for prop in self.goal :
 			prop[ 'time' ] = self.steps
 			prop[ 'isaction' ] = False
-			#f.write( "%s 0\n" % self.getID( prop ) )
-			f.write( "%s\n" % prop[ 'name' ] )
+			if DEBUG : f.write( "%s%s\n" % ( "NOT " if not prop[ 'state' ] else "" , prop[ 'name' ] ) )
+			else : f.write( "%s 0\n" % self.getID( prop ) )
 
 		return filename
 	
@@ -281,7 +284,8 @@ class StripsSolver :
 		return self.process()
 
 if __name__ == "__main__" :
-	if len( sys.argv ) == 3 :
+	if len( sys.argv ) >= 3 :
+		if len( sys.argv ) > 3 : DEBUG = sys.argv[ 3 ]
 		stripsfile = sys.argv[ 1 ]
 		solver = StripsSolver( stripsfile )
 		situationfile = sys.argv[ 2 ]
