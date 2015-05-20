@@ -35,31 +35,31 @@ Dado que o sistema de planejamento é geral, foram feitos dois experimentos, par
 		
  \subsection{Experimentos com mundo dos satelites}
 \label{subsec:expsatelites}
-	A figura~\ref{fig:satsize} mostra os tamanhos do plano de solução do sistema de planejamento para problemas de 1 a 5 satélites e mostra que enquanto o número de blocos aumenta, o tamanho do plano não muda muito.
+	A figura~\ref{fig:satsize} mostra os tamanhos do plano de solução do sistema de planejamento para o mundos dos satélites, se pode ver que o tamanho do plano não tem uma relação direta com o número de variáveis.
 		\begin{figure}[H]
 			\centering
-			\includegraphics[height=8cm]{images/blocks-size}
+			\includegraphics[height=8cm]{images/satellites-size}
 			\caption{Tamanhos do plano de solução}
 			\label{fig:satsize}
 		\end{figure}
-	Mas na figura~\ref{fig:sattime} se poder ver que os tempos de execução aumentam consideravelmente enquanto o número de blocos aumenta desde segundos até mais de uma hora para 8 blocos.
+	Mas na figura~\ref{fig:sattime} se poder ver que os tempos de execução aumentam consideravelmente enquanto o número de variáveis aumenta.
 		\begin{figure}[H]
 			\centering
-			\includegraphics[height=8cm]{images/blocks-time}
+			\includegraphics[height=8cm]{images/satellites-time}
 			\caption{Tempo de execução (segundos)}
 			\label{fig:sattime}
 		\end{figure}
-	Além disso, o número de proposições necessárias para solucionar o problema sempre aumenta apesar que o tamanho do plano não muda muito.
+	Além disso, o número de proposições aumenta muito em cada incremento de número de variáveis.
 		\begin{figure}[H]
 			\centering
-			\includegraphics[height=8cm]{images/blocks-props}
+			\includegraphics[height=8cm]{images/satellites-props}
 			\caption{Número de proposições}
 			\label{fig:satprops}
 		\end{figure}
-	Por último, o número de cláusulas aumenta exponencialmente devido que se tem mais variáveis e portanto mais valores para evaluar as ações e fluentes, o que também adiciona mais axiomas em cada iteração do algoritmo. 
+	Por último, são necessárias mais de dois milhões de cláusulas para solucionar o tercer archivo de dados de entrada.
 		\begin{figure}[H]
 			\centering
-			\includegraphics[height=8cm]{images/blocks-clauses}
+			\includegraphics[height=8cm]{images/satellites-clauses}
 			\caption{Número de cláusulas}
 			\label{fig:satclauses}
 		\end{figure}

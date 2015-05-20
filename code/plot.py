@@ -44,9 +44,9 @@ def makePlots2( directory ) :
 				if line.startswith( "SOLUTION" ) : break
 				( key , value ) = line.split( " = " )
 				stats[ key.lower() ].append( float( value ) )
-	plt.xlabel( 'Satellites' )
 	for key in stats :
 		if key == 'satellites' : continue
+		plt.xlabel( 'Satellites' )
 		plt.ylabel( key.capitalize() )
 		plt.plot( stats[ 'satellites' ] , stats[ key ] , 'b-' , linewidth = 2.0 )
 		plt.savefig( "%s%s-%s.png" % ( directory , 'satellites' , key ) )
