@@ -33,8 +33,27 @@ def makePlots( directory , xlabel ) :
 		makePlot( data , xlabel , key , "%s%s-%s.png" % ( directory , xlabel , key ) )
 	return lstStats
 
+def makePlots2( directory ) :
+	files = [ directory + f for f in os.listdir( directory ) if f.endswith( '.out' ) ]
+	stats = { 'time' : [] , 'props' : [] , 'clauses' : [] , 'size' : [] , 'satellites' : [] }
+	for name in files :
+		currentn = int( name.split( '-' )[ 1 ][ :2 ] )
+		stats[ 'satellites' ].append( currentn )
+		with open( name , 'r' ) as f :
+			for line in f :
+				if line.startswith( "SOLUTION" ) : break
+				( key , value ) = line.split( " = " )
+				stats[ key.lower() ].append( float( value ) )
+	plt.xlabel( 'Satellites' )
+	for key in stats :
+		if key == 'satellites' : continue
+		plt.ylabel( key.capitalize() )
+		plt.plot( stats[ 'satellites' ] , stats[ key ] , 'b-' , linewidth = 2.0 )
+		plt.savefig( "%s%s-%s.png" % ( directory , 'satellites' , key ) )
+		plt.clf()
+
 if __name__ == "__main__" :
 	directory = '/Users/nonwhite/Dropbox/IME/Laboratorio IA/LabIA_P3/code/blocks/'
 	makePlots( directory , 'blocks' )
 	directory = '/Users/nonwhite/Dropbox/IME/Laboratorio IA/LabIA_P3/code/satellite/'
-	makePlots( directory , 'satellites' )
+	makePlots2( directory )
