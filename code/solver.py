@@ -245,6 +245,7 @@ class StripsSolver :
 	# Process the CNF with SAT Solver
 	def getStateFromCNF( self , cnffile ) :
 		print "Solving %s" % cnffile
+		#satsolver = [ '../satsolver/zchaff' , cnffile ]
 		satsolver = [ './toysat' , cnffile ]
 		outname = cnffile.replace( '.cnf' , '.out' )
 		outfile = open( outname , 'w' )
@@ -304,10 +305,6 @@ class StripsSolver :
 		while True :
 			self.addAction()
 			if self.isSolved() : break
-		'''
-		while not self.isSolved() :
-			self.addAction()
-		'''
 	
 	def extractSolution( self ) :
 		print "Extracting solution for %s" % self.domain[ 'domain_name' ]
