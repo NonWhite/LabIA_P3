@@ -1,0 +1,429 @@
+{
+    "actions": [
+        {
+            "effect": {
+                "prop": "and", 
+                "terms": [
+                    {
+                        "name": "pointing", 
+                        "parameters": [
+                            "s", 
+                            "d_new"
+                        ], 
+                        "state": true
+                    }, 
+                    {
+                        "name": "pointing", 
+                        "parameters": [
+                            "s", 
+                            "d_prev"
+                        ], 
+                        "state": false
+                    }
+                ]
+            }, 
+            "name": "turn_to", 
+            "parameters": [
+                [
+                    "s", 
+                    "satellite"
+                ], 
+                [
+                    "d_new", 
+                    "direction"
+                ], 
+                [
+                    "d_prev", 
+                    "direction"
+                ]
+            ], 
+            "precondition": {
+                "prop": "and", 
+                "terms": [
+                    {
+                        "name": "pointing", 
+                        "parameters": [
+                            "s", 
+                            "d_prev"
+                        ], 
+                        "state": true
+                    }, 
+                    {
+                        "name": "=", 
+                        "parameters": [
+                            "d_new", 
+                            "d_prev"
+                        ], 
+                        "state": false
+                    }
+                ]
+            }
+        }, 
+        {
+            "effect": {
+                "prop": "and", 
+                "terms": [
+                    {
+                        "name": "power_on", 
+                        "parameters": [
+                            "i"
+                        ], 
+                        "state": true
+                    }, 
+                    {
+                        "name": "calibrated", 
+                        "parameters": [
+                            "i"
+                        ], 
+                        "state": false
+                    }, 
+                    {
+                        "name": "power_avail", 
+                        "parameters": [
+                            "s"
+                        ], 
+                        "state": false
+                    }
+                ]
+            }, 
+            "name": "switch_on", 
+            "parameters": [
+                [
+                    "i", 
+                    "instrument"
+                ], 
+                [
+                    "s", 
+                    "satellite"
+                ]
+            ], 
+            "precondition": {
+                "prop": "and", 
+                "terms": [
+                    {
+                        "name": "on_board", 
+                        "parameters": [
+                            "i", 
+                            "s"
+                        ], 
+                        "state": true
+                    }, 
+                    {
+                        "name": "power_avail", 
+                        "parameters": [
+                            "s"
+                        ], 
+                        "state": true
+                    }
+                ]
+            }
+        }, 
+        {
+            "effect": {
+                "prop": "and", 
+                "terms": [
+                    {
+                        "name": "power_on", 
+                        "parameters": [
+                            "i"
+                        ], 
+                        "state": false
+                    }, 
+                    {
+                        "name": "power_avail", 
+                        "parameters": [
+                            "s"
+                        ], 
+                        "state": true
+                    }
+                ]
+            }, 
+            "name": "switch_off", 
+            "parameters": [
+                [
+                    "i", 
+                    "instrument"
+                ], 
+                [
+                    "s", 
+                    "satellite"
+                ]
+            ], 
+            "precondition": {
+                "prop": "and", 
+                "terms": [
+                    {
+                        "name": "on_board", 
+                        "parameters": [
+                            "i", 
+                            "s"
+                        ], 
+                        "state": true
+                    }, 
+                    {
+                        "name": "power_on", 
+                        "parameters": [
+                            "i"
+                        ], 
+                        "state": true
+                    }
+                ]
+            }
+        }, 
+        {
+            "effect": {
+                "prop": "none", 
+                "terms": [
+                    {
+                        "name": "calibrated", 
+                        "parameters": [
+                            "i"
+                        ], 
+                        "state": true
+                    }
+                ]
+            }, 
+            "name": "calibrate", 
+            "parameters": [
+                [
+                    "s", 
+                    "satellite"
+                ], 
+                [
+                    "i", 
+                    "instrument"
+                ], 
+                [
+                    "d", 
+                    "direction"
+                ]
+            ], 
+            "precondition": {
+                "prop": "and", 
+                "terms": [
+                    {
+                        "name": "on_board", 
+                        "parameters": [
+                            "i", 
+                            "s"
+                        ], 
+                        "state": true
+                    }, 
+                    {
+                        "name": "calibration_target", 
+                        "parameters": [
+                            "i", 
+                            "d"
+                        ], 
+                        "state": true
+                    }, 
+                    {
+                        "name": "pointing", 
+                        "parameters": [
+                            "s", 
+                            "d"
+                        ], 
+                        "state": true
+                    }, 
+                    {
+                        "name": "power_on", 
+                        "parameters": [
+                            "i"
+                        ], 
+                        "state": true
+                    }
+                ]
+            }
+        }, 
+        {
+            "effect": {
+                "prop": "none", 
+                "terms": [
+                    {
+                        "name": "have_image", 
+                        "parameters": [
+                            "d", 
+                            "m"
+                        ], 
+                        "state": true
+                    }
+                ]
+            }, 
+            "name": "take_image", 
+            "parameters": [
+                [
+                    "s", 
+                    "satellite"
+                ], 
+                [
+                    "d", 
+                    "direction"
+                ], 
+                [
+                    "i", 
+                    "instrument"
+                ], 
+                [
+                    "m", 
+                    "mode"
+                ]
+            ], 
+            "precondition": {
+                "prop": "and", 
+                "terms": [
+                    {
+                        "name": "calibrated", 
+                        "parameters": [
+                            "i"
+                        ], 
+                        "state": true
+                    }, 
+                    {
+                        "name": "on_board", 
+                        "parameters": [
+                            "i", 
+                            "s"
+                        ], 
+                        "state": true
+                    }, 
+                    {
+                        "name": "supports", 
+                        "parameters": [
+                            "i", 
+                            "m"
+                        ], 
+                        "state": true
+                    }, 
+                    {
+                        "name": "power_on", 
+                        "parameters": [
+                            "i"
+                        ], 
+                        "state": true
+                    }, 
+                    {
+                        "name": "pointing", 
+                        "parameters": [
+                            "s", 
+                            "d"
+                        ], 
+                        "state": true
+                    }, 
+                    {
+                        "name": "power_on", 
+                        "parameters": [
+                            "i"
+                        ], 
+                        "state": true
+                    }
+                ]
+            }
+        }
+    ], 
+    "domain_name": "satellite", 
+    "predicates": [
+        {
+            "name": "on_board", 
+            "parameters": [
+                [
+                    "i", 
+                    "instrument"
+                ], 
+                [
+                    "s", 
+                    "satellite"
+                ]
+            ]
+        }, 
+        {
+            "name": "supports", 
+            "parameters": [
+                [
+                    "i", 
+                    "instrument"
+                ], 
+                [
+                    "m", 
+                    "mode"
+                ]
+            ]
+        }, 
+        {
+            "name": "pointing", 
+            "parameters": [
+                [
+                    "s", 
+                    "satellite"
+                ], 
+                [
+                    "d", 
+                    "direction"
+                ]
+            ]
+        }, 
+        {
+            "name": "power_avail", 
+            "parameters": [
+                [
+                    "s", 
+                    "satellite"
+                ]
+            ]
+        }, 
+        {
+            "name": "power_on", 
+            "parameters": [
+                [
+                    "i", 
+                    "instrument"
+                ]
+            ]
+        }, 
+        {
+            "name": "calibrated", 
+            "parameters": [
+                [
+                    "i", 
+                    "instrument"
+                ]
+            ]
+        }, 
+        {
+            "name": "have_image", 
+            "parameters": [
+                [
+                    "d", 
+                    "direction"
+                ], 
+                [
+                    "m", 
+                    "mode"
+                ]
+            ]
+        }, 
+        {
+            "name": "calibration_target", 
+            "parameters": [
+                [
+                    "i", 
+                    "instrument"
+                ], 
+                [
+                    "d", 
+                    "direction"
+                ]
+            ]
+        }
+    ], 
+    "requirements": [
+        ":strips", 
+        ":equality", 
+        ":typing"
+    ], 
+    "types": [
+        "satellite", 
+        "direction", 
+        "instrument", 
+        "mode"
+    ]
+}
