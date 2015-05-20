@@ -1,5 +1,6 @@
 .DS_Store
 */.DS_Store
+code/blocks/blocks_*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
