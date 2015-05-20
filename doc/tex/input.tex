@@ -1,56 +1,60 @@
 \section{Dados de entrada}
 
-O orquestrador vai receber os dados de entrada dum archivo de dados gerado aleatoriamente que conterá as chamadas dos elevadores e os tempos de estas. A continuação se explicará os aspectos relevantes dos dados.
+O sistema de planejamento vai receber dois archivos de entrada. O primeiro é o problema descrito na linguagem STRIPS e o segundo é uma possível situação (com estado inicial e meta) para fazer a busca de solução.
 
-\subsection{Restrições}
-\label{subsec:restricoes}
-	O archivo de entrada vai ter a seguinte forma: \\
-		\begin{lstlisting}
-			|${T}$|
-			|${NC}_1$|
-			|${{in1}_1} {{out1}_1}$|
-			|${{in1}_2} {{out1}_2}$|
-			...
-			|${{in1}_{{NC}_1}} {{out1}_{{NC}_1}}$|
-			.
-			.
-			.
-			|${NC}_T$|
-			|${{inT}_1} {{outT}_1}$|
-			|${{inT}_2} {{outT}_2}$|
-			...
-			|${{inT}_{{NC}_T}} {{outT}_{{NC}_T}}$|
+\subsection{Linguagem STRIPS}
+\label{subsec:strips}
+	O archivo de entrada com o problema descrito vai ter a seguinte forma: \\
+		\begin{lstlisting}[ caption = Estructura de archivo STRIPS , label = lst:strips ]
+			( define ( domain [domain_name] ) |\label{code:stripsdomain}|
+				( :requirements [list_of_requirements] ) |\label{code:stripsreq}|
+				( :types [list_of_types] ) |\label{code:stripstypes}|
+				( :predicates
+					[list_of_predicates] |\label{code:stripspred}|
+				)
+				[list_of_actions] |\label{code:stripsactions}|
+			)
 		\end{lstlisting}
-	A primeira linha tem $T$ que será o tempo para o orquestrador, ou seja que vai funcionar no intervalo $[ 0 , T ]$. Logo se tem $T$ grupos, onde para o grupo $t$, ${NC}_t$ é o número de chamadas dos elevadores no tempo $t$, seguido de ${NC}_t$ linhas descrevendo cada uma das chamadas como ${in} {out}$ onde ${in}$ é o andar onde a pessoa está e ${out}$ o andar onde a pessoa quer ir.
-	Em quanto as restrições numéricas temos:
-	\begin{itemize}
-		\item $N$ será o número de elevadores e $M$ o número de andares
-		\item ${in}$ e ${out}$ sempre estão no intervalo $[1,M]$ e não podem ser iguaís
-		\item O número máximo de chamadas para um determinado $t \in [0,T]$ é ${max_{NC}}$
-		\item Todos os elevadores tem a mesma capacidade $C$
-		\item Todos os elevadores servem todos os andares
-	\end{itemize}
+	Na linha~\ref{code:stripsdomain} vai o nome do dominio e na linha~\ref{code:stripsreq} uma lista de requerimentos (mas não vai ser usada neste trabalho). As seguinte linhas são as principais para descrever o problema.
+	Linha~\ref{code:stripstypes} tem uma lista dos tipos de dados que terá o problema e os tipos que vão receber as ações e fluentes. Por exemplo, para o problema dos blocos (ler \cite{USPLeliane15}) temos:
+		\begin{lstlisting}
+			( :types block )
+		\end{lstlisting}
+	Da mesma forma temos a linha~\ref{code:stripspred} no bloco~\ref{lst:strips} que contem uma lista de fluentes com seus parámetros e tipos de cada um. Por exemplo para o problema anterior:
+		\begin{lstlisting}[ caption = Lista de fluentes do problema ]
+			( :predicates
+				( on ?x - block ?y - block )
+				( ontable ?x - block )
+				( clear ?x - block )
+				( handempty )
+				( holding ?x - block )
+			)
+		\end{lstlisting}
+	No bloco~\ref{lst:stripsaction} se mostra a definição da ação ${pick\-up}$ do problema. Além, cada ação sempre vai ter uma lista de parâmetros com seus tipos, seus precondições e seus efeitos. Por último, a lista de ações vai na linha~\ref{code:stripsactions} no bloco~\ref{lst:strips}.
+		\begin{lstlisting}[ caption = Descrição de ação , label = lst:stripsaction ]
+			( :action pick-up
+				:parameters ( ?x - block )
+				:precondition ( and
+					( clear ?x )
+					( ontable ?x )
+					( handempty )
+				)
+				:effect ( and
+					( not ( ontable ?x ) )
+					( not ( clear ?x ) )
+					( not ( handempty ) )
+					( holding ?x )
+				)
+			)
+		\end{lstlisting}
 	
-\subsection{Gerador aleatório de dados}
-	O gerador de dados está escrito na linguagem de programação Java e recebe 4 parâmetros: $T$ , ${max}_{NC}$ , $M$ e o nome para o archivo gerado.
-	A função principal que gera uma soa chamada é a seguinte:
-	\begin{lstlisting}
-		public ElevatorCall generateSingleElevatorCall( Integer currentTime ){
-			Integer in = Utils.randomBetween( 1 , numFloors ) ;
-			Integer out = Utils.randomBetween( 1 ,  numFloors ) ;
-			while( out == in ) out = Utils.randomBetween( 1 ,  numFloors ) ;
-			return new ElevatorCall( in , out , currentTime ) ;
-		}
-	\end{lstlisting}
-	Esta é usada por a função:
-	\begin{lstlisting}
-		public List<ElevatorCall> generateElevatorCalls( Integer currentTime ){
-			Integer numCalls = Utils.randomBetween( 1 ,  maxNumCalls ) ;
-			List<ElevatorCall> lstCalls = new ArrayList<ElevatorCall>() ;
-			for( Integer i = 0 ; i < numCalls ; i++)
-				lstCalls.add( generateSingleElevatorCall( currentTime ) ) ;
-			return lstCalls ;
-		}
-	\end{lstlisting}
-	Esta última função é usada $T$ vezes para gerar todas as chamadas e guardá-las no archivo especificado como parámetro. \\
-	O gerador de dados está no paquete Utils, no archivo CallGenerator.java do projeto.
+\subsection{Estado inicial e meta}
+	Como se mostrou em~\ref{subsec:strips} se tem fluentes. Estas fluentes vai ser usadas para definir o estado inicial e a meta. Por exemplo para o problema dos blocos podemos ter:
+		\begin{lstlisting}[ caption = Archivo com estado inicial e meta ]
+			# Estado inicial |\label{code:initstate}|
+			clear_a ; clear_b ; ontable_a ; ontable_ b ; handempty
+			# Meta |\label{code:meta}|
+			on_a_b
+		\end{lstlisting}
+	As linhas~\ref{code:initstate} e~\ref{code:meta} são só referenciáveis e não ter que estar no archivo de entrada.
+	Com ambos archivos o sistema tem que dar uma solução. A continuação se explicará a implementação do sistema de planejamento.

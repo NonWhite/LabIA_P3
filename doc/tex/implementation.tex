@@ -1,0 +1,146 @@
+\section{Implementação do sistema}
+\label{sec:implementacao}
+
+Os pasos para fazer o sistema de planejamento clássico (implementado em python) são os seguintes:
+	\begin{itemize}
+		\item Parser de STRIPS para Json
+		\item Pre processamento do archivo com o estado inicial e a meta
+		\item Parser de Json para CNF
+		\item Adicionamento de ações (aumento em tamanho do plano de solução)
+		\item Interprete de CNF para Json
+	\end{itemize}
+O pseudocódigo~\ref{lst:solver} mostra o algoritmo usado pelo sistema de planejamento para a busca de solução para um problema dado.
+	\renewcommand \lstlistingname{Pseudocódigo}
+	\begin{lstlisting}[ caption = Algoritmo de busca , label = lst:solver ]
+		Function Solve
+			While true
+				Add axioms for one more action |\label{code:addaxiom}|
+				cnf = generate CNF |\label{code:gencnf}|
+				model = sat solver( cnf ) |\label{code:satsolver}|
+				If model exists then
+					Sol = extract solution |\label{code:extract}|
+					break
+				End If
+			End While
+			Return Sol
+		End Function
+	\end{lstlisting}
+As linhas~\ref{code:addaxiom}, \ref{code:gencnf} e \ref{code:extract} seram explicadas em~\ref{subsec:addaxioms}, \ref{subsec:jsoncnf} e \ref{subsec:cnfjson} respectivamente. Além, o SAT-solver da linha~\ref{code:satsolver} já está implementado e só sera usado. Toda a implementação está no archivo ${solver.py}$
+
+\subsection{Parser de STRIPS para Json}
+\label{subsec:stripsjson}
+	O archivo STRIPS tem uma estrutura que é muito dificil de usar para fazer cálculos e operações, ainda pior de mudar para CNF diretamente. Mas é possível obter todas as partes necessárias usando expressões regulares e mudar para o padrão Json que tem a forma de um dicionário e é mais fácil de usar. A figura~\ref{lst:parserjson} mostra o método principal do parser que recebe o archivo STRIPS.
+	\renewcommand \lstlistingname{Código}
+	\begin{lstlisting}[ caption = Parser STRIPS/Json , label = lst:parserjson ]
+		def convertToJson( filename ) :
+			s = open( filename , 'r' ).read()
+			for ( original , replaceable ) in REPLACEABLE_WORDS.iteritems() : |\label{code:jsonrep}|
+				s = s.replace( original , replaceable )
+			lst = {}
+			for ( pattern , key ) in EXTRACT_RULES.iteritems() :
+				matches = extractMatches( pattern , s )
+				lst[ key ] = curateFunctions[ key ]( matches )
+			newname = os.path.splitext( filename )[ 0 ] + '.json'
+			with open( newname , 'w' ) as jsonfile :
+				json.dump( lst , jsonfile , indent = 4 , sort_keys = True )
+			return lst
+	\end{lstlisting}
+	Primeiro são substituidas algumas cadeias para fazer mais fácil a extração de cada uma das partes e depois executa a função $curateFunctions$ respetiva para cada parte (ações, fluentes, tipos, etc.). Por último, salva o novo objeto json em um archivo para não ter que ler o archivo STRIPS outra vez. Esta função está no archivo ${converter.py}$ e as funções de extração para cada parte estão no archivo ${extractor.py}$.
+
+\subsection{Pre processamento}
+	O pre-processamento tem os seguintes pasos:
+		\begin{itemize}
+			\item Obter o estado inicial e a meta
+			\item Obter todas as variáveis do problema
+			\item Evaluar as fluentes e as ações com as variáveis encontradas
+			\item Adicionar ao estado inicial os fluentes não especificadas no archivo
+			\item Identificar para cada ação os fluentes que não são afeitados por ela
+		\end{itemize}
+	Os primeiros dois passos agora são mais fáceis porque já temos o parser de~\ref{subsec:stripsjson} e cada fluente está separado pelo caracter ";" uma de outra. Além, as variáveis sempre estão separadas pelo caracter "\_".
+	Para poder fazer o seguinte paso temos a função no código~\ref{lst:evaluate}.
+	\begin{lstlisting}[ caption = Função que evalua com as variáveis encontradas , label = lst:evaluate ]
+		def evaluateWith( self , prop , isAction = False , variables = None ) :
+			if variables == None : variables = self.var
+			if isAction :
+				# Preprocess action
+			lst = self.addVariable( prop.copy() , variables , isAction ) |\label{code:addvar}|
+			if not isAction :
+				# Post process fluent
+			else :
+				# Post process action
+			return lst
+	\end{lstlisting}
+	Na linha~\ref{code:addvar} é uma função recursiva que adiciona um valor a uma variável em cada chamada. No caso dos fluentes só tem que ser substituidos seus parâmetros com alguns valores, mas para as ações também tem que ser substituidas os valores para seus precondições e efeitos.\\
+	O paso 4 é verificar quais fluentes do problema não estão no estado inicial e adicionar seus negações, ou seja, para o fluente $P$ que não está no estado inicial, adicionar $\lnot P$.\\
+	Por último, para cada ação verificar quais fluentes não são afeitadas por ela para ter essa informação ao momento de gerar o archivo CNF.
+		
+ \subsection{Parser de Json para CNF}
+ \label{subsec:jsoncnf}
+ 	Para gerar o CNF a partir de Json temos que definir uma forma de levar uma ação o fluente a uma representação numérica. Depois de fazer o pre-processamento já temos todos os fluentes e ações evaluadas para todas as combinações das variáveis, então se dizemos que $N_f = $ número de fluentes e $N_a = $ número de ações, então temos que o número total de proposições ao inicio será $total = N_f + N_a$. Além, fluentes vai ter um ID de 1 a $N_f$ e as ações de $N_f + 1$ a $N_f + N_a - 1$, mas esto já não vai cumplir para um tamanho do plano mais grande. Então sabemos que o tempo em que ocorre a proposição é importante para dar um ID único, então para qualquer proposição temos que a seguinte função da seu representação numérica.
+	\[
+		ID = prop.time * total + pos
+	\]
+	Onde pos será seu posição na lista de fluentes ou na lista de ações dependendo do tipo de proposição. A função no código~\ref{lst:getid} faz o que queremos obter.
+	\begin{lstlisting}[ caption = Função para obter representação numérica de uma proposição , label = lst:getid ]
+		def getID( self , prop ) :
+			if prop == None : return ''
+			time = prop[ 'time' ]
+			pos = 0
+			if prop[ 'isaction' ] :
+				pos = getAllValues( self.actions , 'name' ).index( prop[ 'name' ] )
+				pos += self.idactions
+			else :
+				pos = self.predicates.index( prop[ 'name' ] )
+				pos += self.idpredicates
+			ID = pos + time * self.total
+			if not prop[ 'state' ] : ID = -ID
+			return ID
+	\end{lstlisting}
+	
+	Uma vez que temos uma forma de obter um identificador para cada proposição podemos gerar o archivo CNF para cada tipo de cláusula no problema: estado inicial, axiomas e meta.
+	Por cada fluente no estado inicial vamos ter uma linha no archivo CNF com seu ID para o tempo 0. Da mesma forma para cada fluente na meta, mas estas vão ter tempo $n$ (tamanho do plano).
+	Por último, os axiomas são da forma $A_1 \land A_2 \land \ldots \land A_k \to B$ (com $k \geq 1$). Cada axioma é mudado para a forma $\lnot A_1 \lor \lnot A_2 \lor \ldots \lor \lnot A_k \lor B$ e colocado no archivo CNF.
+	
+\subsection{Adicionamento de ações}
+\label{subsec:addaxioms}
+	Em cada iteração do algoritmo de busca especificado ao inicio da seção~\ref{sec:implementacao} vai ser adicionados axiomas (cláusulas) para todas as possíveis ações que existem no problema.\\
+	Na definicão dada no bloco~\ref{lst:stripsaction} na subseção~\ref{subsec:strips} temos que cada ação tem precondições e efeitos.
+	\subsubsection{Axiomas de precondições}
+		Se dizemos que ${Pre}( A )^t$ é a conjunção das precondições de $A^t$ então para cada ação adicionamos axiomas da forma $A^t \to {P_i}^t$ (com ${P_i}^t\in Pre( A )^t$). Por ser precondições sempre ter que ser ao mesmo tempo da ação.
+	\subsubsection{Axiomas de efeitos}
+		Se dizemos que ${Eff}( A )^{t+1}$ é a conjunção dos efeitos de $A^t$ então para cada ação adicionamos axiomas da forma $A^t \to {P_i}^{t+1}$ (com ${P_i}^{t+1} \in Eff( A )^{t+1}$). Como são efeitos de uma ação, os fluentes ocorreram no seguinte instante de tempo.
+	\subsubsection{Axiomas de persistencia}
+		Para cada ação existem fluentes que não são afeitadas por ela. Se dizemos $Pers( A )^t$ é a conjunção dessas fluentes para $A^t$, então temos que adicionar dois axiomas:
+		\begin{itemize}
+			\item $( {P_i}^t \land A^t ) \to {P_i}^{t+1}$
+			\item $( \lnot {P_i}^t \land A^t ) \to \lnot {P_i}^{t+1}$
+		\end{itemize}
+	\subsubsection{Axiomas de continuidade}
+		Para cada instante de tempo sempre deve ser executada alguma ação e portanto temos que adicionar o axioma:
+		${A_1}^t \lor {A_2}^t \lor \ldots \lor {A_{N_a}}^t$
+	\subsubsection{Axiomas de não paralelismo}
+		O axioma anterior permite que se façam mais de uma ação por instante de tempo, mas isso não é possível para solucionar o problema, então para cada par de ações adicionamos:
+		$\lnot {A_i}^t \lor \lnot {A_j}^t$, para $i \neq j$.\\
+	Adicionar todos os axiomas anteriores garantir que sempre se execute uma ação e só uma. Além, que sempre será executada uma ação que cumple seus precondições e por último extende seus efeitos ao próximo instante de tempo.
+	
+\subsection{Interprete de CNF para Json}
+\label{subsec:cnfjson}
+	Por último, uma vez encontrado uma solução com o SAT-solver temos que voltar do archivo CNF com representações numéricas para as representações literais das ações e fluentes. Para isso, só temos que fazer o contrario que está especificado em~\ref{subsec:jsoncnf} para cada proposição que foi verdadera em cada instante de tempo. O código~\ref{lst:getprop} mostra a implementação desta ideia.
+	\begin{lstlisting}[ caption = Obtenção do representação literal , label = lst:getprop ]
+		getProposition( self , ID ) :
+			isnegation = False
+			if ID < 0 :
+				isnegation = True
+				ID = -ID
+			pos = ( ID % self.total ) - 1
+			resp = ''
+			if pos >= len( self.predicates ) :
+				pos -= len( self.predicates )
+				resp = self.actions[ pos ][ 'name' ]
+			else :
+				resp = self.predicates[ pos ]
+			resp = ( "~" if isnegation else "" ) + resp
+			return resp
+	\end{lstlisting}
+	A função anterior calcula o resíduo de ID com o total de proposições e determina se é uma ação o uma fluente, depois retorna a representação literal dependendo o caso.
+	Com esto já se pode salvar um archivo com as ações e fluentes para cada instante de tempo no plano de solução onde cada dois linhas representam um instante, sendo a primeira fluentes verdaderos e a segunda a ação executada.
