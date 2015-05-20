@@ -1,0 +1,38 @@
+TIME = 77.98
+PROPS = 1752
+CLAUSES = 127596
+SIZE = 16
+SOLUTION
+on_d_e;on_e_c;on_c_a;on_a_b;ontable_b;clear_d;handempty
+unstack_d_e
+on_e_c;on_c_a;on_a_b;ontable_b;clear_e;holding_d
+put-down_d
+on_e_c;on_c_a;on_a_b;ontable_d;ontable_b;clear_d;clear_e;handempty
+unstack_e_c
+on_c_a;on_a_b;ontable_d;ontable_b;clear_d;clear_c;holding_e
+stack_e_d
+on_e_d;on_c_a;on_a_b;ontable_d;ontable_b;clear_e;clear_c;handempty
+unstack_c_a
+on_e_d;on_a_b;ontable_d;ontable_b;clear_e;clear_a;holding_c
+put-down_c
+on_e_d;on_a_b;ontable_d;ontable_b;ontable_c;clear_e;clear_c;clear_a;handempty
+unstack_a_b
+on_e_d;ontable_d;ontable_b;ontable_c;clear_b;clear_e;clear_c;holding_a
+put-down_a
+on_e_d;ontable_d;ontable_b;ontable_c;ontable_a;clear_b;clear_e;clear_c;clear_a;handempty
+unstack_e_d
+ontable_d;ontable_b;ontable_c;ontable_a;clear_d;clear_b;clear_c;clear_a;holding_e
+stack_e_a
+on_e_a;ontable_d;ontable_b;ontable_c;ontable_a;clear_d;clear_b;clear_e;clear_c;handempty
+pick-up_b
+on_e_a;ontable_d;ontable_c;ontable_a;clear_d;clear_e;clear_c;holding_b
+stack_b_e
+on_b_e;on_e_a;ontable_d;ontable_c;ontable_a;clear_d;clear_b;clear_c;handempty
+pick-up_c
+on_b_e;on_e_a;ontable_d;ontable_a;clear_d;clear_b;holding_c
+stack_c_b
+on_b_e;on_e_a;on_c_b;ontable_d;ontable_a;clear_d;clear_c;handempty
+pick-up_d
+on_b_e;on_e_a;on_c_b;ontable_a;clear_c;holding_d
+stack_d_c
+on_d_c;on_b_e;on_e_a;on_c_b;ontable_a;clear_d;handempty

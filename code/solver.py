@@ -1,4 +1,5 @@
 import sys
+import os
 import time
 from converter import *
 from utils import *
@@ -347,6 +348,7 @@ class StripsSolver :
 		self.saveSolution( solution , numvars , numclauses , elapsed_time , outfile )
 	
 	def saveSolution( self , sol , numvars , numclauses , elapsed_time , outfile ) :
+		if os.path.isfile( outfile ) : return
 		with open( outfile , 'w' ) as f :
 			f.write( "TIME = %.2f\n" % elapsed_time )
 			f.write( "PROPS = %s\n" % numvars )
@@ -358,7 +360,7 @@ class StripsSolver :
 					if k : f.write( ';' )
 					f.write( "%s" % sol[ i ][ 'props' ][ k ] )
 				f.write( '\n' )
-				if i < len( sol ) - 1 :
+				if 'action' in sol[ i ] :
 					f.write( "%s\n" % sol[ i ][ 'action' ] )
 
 if __name__ == "__main__" :

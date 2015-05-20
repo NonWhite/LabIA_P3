@@ -1,0 +1,10 @@
+TIME = 0.11
+PROPS = 49
+CLAUSES = 450
+SIZE = 2
+SOLUTION
+ontable_a;ontable_b;clear_a;clear_b;handempty
+pick-up_a
+ontable_b;clear_b;holding_a
+stack_a_b
+on_a_b;ontable_b;clear_a;handempty
