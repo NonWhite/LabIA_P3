@@ -1,7 +1,7 @@
 .DS_Store
 */.DS_Store
-code/blocks/blocks_*
-code/satellite/satellite_*
+data/blocks/blocks_*
+data/satellite/satellite_*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
