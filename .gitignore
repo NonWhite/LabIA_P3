@@ -3,6 +3,13 @@
 data/blocks/blocks_*
 data/satellite/satellite_*
 
+# Latex Compilation files
+doc/main.aux
+doc/main.bbl
+doc/main.lof
+doc/main.synctex.gz
+doc/main.toc
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
