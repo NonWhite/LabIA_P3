@@ -57,21 +57,15 @@ class SatPlan( Solver ) :
 			for pre in getAllValues( act[ 'precondition' ] , 'name' ) :
 				if pre not in getAllValues( self.start , 'name' ) :
 					self.start.append( { 'name' : pre , 'state' : False } )
-		#print " ======== START ======== "
-		#for x in self.start : print x
 		# Get full name for goal propositions
 		for i in range( len( self.goal ) ) :
 			name = self.goal[ i ][ 'name' ]
 			for p in self.goal[ i ][ 'parameters' ] :
 				name += VAR_DELIMITER + p
 			self.goal[ i ] = { 'name' : name , 'state': True }
-		#print " ======== GOAL ======== "
-		#for x in self.goal : print x
 		# Update list of predicates with not recognized propositions at init
 		for p in getAllValues( self.start , 'name' ) :
 			if p not in self.predicates : self.predicates.append( p )
-		#print " ======== PREDICATES ======== "
-		#for x in self.predicates : print x
 		self.idpredicates = 1
 		self.idactions = len( self.predicates ) + 1
 		self.total = len( self.predicates ) + len( self.actions )
@@ -81,14 +75,10 @@ class SatPlan( Solver ) :
 			for pred in self.predicates :
 				if pred not in getAllValues( act[ 'effect' ] , 'name' ) :
 					act[ 'persistence' ].append( { 'name' : pred , 'state' : True } )
-		#print " ======== ACTIONS ======== "
-		#for x in self.actions : print x
 
 		print "#PREDICATES = %s" % len( self.predicates )
 		print "#ACTIONS = %s" % len( self.actions )
 		print "#IMPLICATIONS = %s" % len( self.implications )
-		#print " ======== VAR ======== "
-		#for ( typ , lstvars ) in self.var.iteritems() : print "%s: %s" % ( typ , lstvars )
 	
 	def getID( self , prop ) :
 		if prop == None : return ''
@@ -185,45 +175,14 @@ class SatPlan( Solver ) :
 		self.implications.append( { 'left' : left , 'right' : None } )
 		# Add axioms of not paralelism
 		for i in range( len( self.actions ) ) :
-			left1 = [ formProposition( self.actions[ i ][ 'name' ] , True , self.steps , True ) ]
-			#left2 = [ formProposition( self.actions[ i ][ 'name' ] , False , self.steps , True ) ]
+			left = [ formProposition( self.actions[ i ][ 'name' ] , True , self.steps , True ) ]
 			for j in range( len( self.actions ) ) :
 				if i == j : continue
-				right1 = formProposition( self.actions[ j ][ 'name' ] , False , self.steps , True )
-				#right2 = formProposition( self.actions[ j ][ 'name' ] , True , self.steps , True )
-				self.implications.append( { 'left' : left1 , 'right' : right1 } )
-				#self.implications.append( { 'left' : left2 , 'right' : right2 } )
+				right = formProposition( self.actions[ j ][ 'name' ] , False , self.steps , True )
+				self.implications.append( { 'left' : left , 'right' : right } )
 
 		self.steps += 1
 		print "#IMPLICATIONS = %s" % len( self.implications )
-
-	def extractSolution( self ) :
-		print "Extracting solution for %s" % self.domain[ 'domain_name' ]
-		filename = "%s/%s_%s.out" % ( self.directory , self.domain[ 'domain_name' ] , self.steps )
-		with open( filename , 'r' ) as f :
-			sol = []
-			for line in f :
-				if not line.startswith( 'v' ) : continue
-				sp = line.split()[ 1: ]
-				if '0' in sp : break
-				sol.extend( [ self.getProposition( int( w ) ) for w in sp ] )
-			idx = 0
-			resp = []
-			for k in range( self.steps + 1 ) :
-				count = 0
-				t = {}
-				while idx < len( sol ) and count < self.total :
-					if sol[ idx ].find( '~' ) < 0 :
-						if sol[ idx ] in getAllValues( self.actions , 'name' ) : t[ 'action' ] = sol[ idx ]
-						else :
-							if 'props' not in t : t[ 'props' ] = []
-							t[ 'props' ].append( sol[ idx ] )
-					idx += 1
-					count += 1
-				resp.append( t )
-		numvars = len( self.predicates ) + self.total * self.steps
-		numclauses = len( self.implications ) + len( self.start ) + len( self.goal )
-		return ( resp , numvars , numclauses ) 
 
 if __name__ == "__main__" :
 	if len( sys.argv ) >= 3 :

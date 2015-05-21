@@ -168,6 +168,35 @@ class Solver :
 		elapsed_time = time.time() - start_time
 		self.saveSolution( solution , numvars , numclauses , elapsed_time , outfile )
 	
+	def extractSolution( self ) :
+	 	print "Extracting solution for %s" % self.domain[ 'domain_name' ]
+		filename = "%s/%s_%s.out" % ( self.directory , self.domain[ 'domain_name' ] , self.steps )
+		numvars = len( self.predicates ) + self.total * self.steps
+		numclauses = len( self.implications ) + len( self.start ) + len( self.goal )
+		with open( filename , 'r' ) as f :
+			sol = []
+			for line in f :
+				sp = line.split()[ :numvars ]
+				if len( sp ) != numvars : continue
+				resp = []
+				sol.extend( [ self.getProposition( int( w ) ) for w in sp ] )
+				idx = 0
+				for k in range( self.steps + 1 ) :
+					count = 0
+					t = {}
+					while idx < len( sol ) and count < self.total :
+						if sol[ idx ].find( '~' ) < 0 :
+							if sol[ idx ] in getAllValues( self.actions , 'name' ) :
+								t[ 'action' ] = sol[ idx ]
+							else :
+								if 'props' not in t : t[ 'props' ] = []
+								t[ 'props' ].append( sol[ idx ] )
+						idx += 1
+						count += 1
+					resp.append( t )
+				break
+		return ( resp , numvars , numclauses )
+	
 	def saveSolution( self , sol , numvars , numclauses , elapsed_time , outfile ) :
 		if os.path.isfile( outfile ) : return
 		with open( outfile , 'w' ) as f :
