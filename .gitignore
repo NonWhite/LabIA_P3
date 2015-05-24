@@ -2,6 +2,7 @@
 */.DS_Store
 data/blocks/blocks_*
 data/satellite/satellite_*
+data/cake/cake_*
 
 # Latex Compilation files
 doc/main.aux

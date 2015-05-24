@@ -1,0 +1,106 @@
+{
+    "actions": [
+        {
+            "effect": {
+                "prop": "and", 
+                "terms": [
+                    {
+                        "name": "have", 
+                        "parameters": [
+                            "x"
+                        ], 
+                        "state": false
+                    }, 
+                    {
+                        "name": "eaten", 
+                        "parameters": [
+                            "x"
+                        ], 
+                        "state": true
+                    }
+                ]
+            }, 
+            "name": "eat", 
+            "parameters": [
+                [
+                    "x", 
+                    "food"
+                ]
+            ], 
+            "precondition": {
+                "prop": "none", 
+                "terms": [
+                    {
+                        "name": "have", 
+                        "parameters": [
+                            "x"
+                        ], 
+                        "state": true
+                    }
+                ]
+            }
+        }, 
+        {
+            "effect": {
+                "prop": "none", 
+                "terms": [
+                    {
+                        "name": "have", 
+                        "parameters": [
+                            "x"
+                        ], 
+                        "state": true
+                    }
+                ]
+            }, 
+            "name": "bake", 
+            "parameters": [
+                [
+                    "x", 
+                    "food"
+                ]
+            ], 
+            "precondition": {
+                "prop": "none", 
+                "terms": [
+                    {
+                        "name": "have", 
+                        "parameters": [
+                            "x"
+                        ], 
+                        "state": false
+                    }
+                ]
+            }
+        }
+    ], 
+    "domain_name": "cake", 
+    "predicates": [
+        {
+            "name": "have", 
+            "parameters": [
+                [
+                    "x", 
+                    "food"
+                ]
+            ]
+        }, 
+        {
+            "name": "eaten", 
+            "parameters": [
+                [
+                    "x", 
+                    "food"
+                ]
+            ]
+        }
+    ], 
+    "requirements": [
+        ":strips", 
+        ":typing", 
+        ":equality"
+    ], 
+    "types": [
+        "food"
+    ]
+}

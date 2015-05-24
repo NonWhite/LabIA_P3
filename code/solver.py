@@ -103,10 +103,10 @@ class Solver :
 		print "Solving %s" % cnffile
 		satsolver = [ SATSOLVER , cnffile ]
 		outname = cnffile.replace( '.cnf' , '.out' )
-		outfile = open( outname , 'w' )
-		ret = call( satsolver , stdout = outfile )
-		if ret == 0 : return self.isSatisfiable( outname )
-		return len( self.implications ) > 0
+		if not os.path.isfile( outname ) :
+			outfile = open( outname , 'w' )
+			ret = call( satsolver , stdout = outfile )
+		return self.isSatisfiable( outname )
 	
 	def isSatisfiable( self , filename ) :
 		with open( filename , 'r' ) as f :
@@ -159,12 +159,14 @@ class Solver :
 		return ( resp , numvars , numclauses ) 
 
 	def solve( self , situationfile ) :
+		outfile = situationfile.replace( '.in' , '.out' )
+		if os.path.isfile( outfile ) : return
 		start_time = time.time()
 		print "Pre-processing information in %s" % situationfile
-		self.preprocess( situationfile )
+		self.initialize( situationfile )
+		self.preprocess()
 		self.process()
 		( solution , numvars , numclauses ) = self.extractSolution()
-		outfile = situationfile.replace( '.in' , '.out' )
 		elapsed_time = time.time() - start_time
 		self.saveSolution( solution , numvars , numclauses , elapsed_time , outfile )
 	
@@ -212,3 +214,64 @@ class Solver :
 				f.write( '\n' )
 				if 'action' in sol[ i ] :
 					f.write( "%s\n" % sol[ i ][ 'action' ] )
+
+	def initialize( self , situationfile ) :
+		self.getStartAndGoal( situationfile )
+		self.directory = os.path.dirname( situationfile )
+		# Get how many variables has for each type (extracted from start and goal)
+		# TODO: Use only one for for start and goal
+		for pred in self.start :
+			name = pred[ 'name' ]
+			params = pred[ 'parameters' ]
+			obj = self.searchInDomain( name )
+			for i in range( len( obj[ 'parameters' ] ) ) :
+				typ = obj[ 'parameters' ][ i ][ 1 ]
+				if typ not in self.var : self.var[ typ ] = []
+				if params[ i ] not in self.var[ typ ] :
+					self.var[ typ ].append( params[ i ] )
+		for goal in self.goal :
+			name = goal[ 'name' ]
+			params = goal[ 'parameters' ]
+			obj = self.searchInDomain( name )
+			for i in range( len( obj[ 'parameters' ] ) ) :
+				typ = obj[ 'parameters' ][ i ][ 1 ]
+				if typ not in self.var : self.var[ typ ] = []
+				if params[ i ] not in self.var[ typ ] :
+					self.var[ typ ].append( params[ i ] )
+		# Evaluate predicates with all variables detected
+		for pred in self.domain[ 'predicates' ] :
+			self.predicates.extend( self.evaluateWith( pred.copy() , isAction = False ) )
+		# Evaluate actions with all variables detected
+		for act in self.domain[ 'actions' ] :
+			self.actions.extend( self.evaluateWith( act.copy() , isAction = True ) )
+		# Get full description for start propositions
+		for i in range( len( self.start ) ) :
+			name = self.start[ i ][ 'name' ]
+			for p in self.start[ i ][ 'parameters' ] :
+				name += VAR_DELIMITER + p
+			self.start[ i ] = { 'name' : name , 'state' : True }
+		for pred in self.predicates :
+			if pred not in getAllValues( self.start , 'name' ) :
+				self.start.append( { 'name' : pred , 'state' : False } )
+		for act in self.actions :
+			for pre in getAllValues( act[ 'precondition' ] , 'name' ) :
+				if pre not in getAllValues( self.start , 'name' ) :
+					self.start.append( { 'name' : pre , 'state' : False } )
+		# Get full name for goal propositions
+		for i in range( len( self.goal ) ) :
+			name = self.goal[ i ][ 'name' ]
+			for p in self.goal[ i ][ 'parameters' ] :
+				name += VAR_DELIMITER + p
+			self.goal[ i ] = { 'name' : name , 'state': True }
+		# Update list of predicates with not recognized propositions at init
+		for p in getAllValues( self.start , 'name' ) :
+			if p not in self.predicates : self.predicates.append( p )
+		self.idpredicates = 1
+		self.idactions = len( self.predicates ) + 1
+		self.total = len( self.predicates ) + len( self.actions )
+		# Get all predicates that are not affected by every action
+		for act in self.actions :
+			act[ 'persistence' ] = []
+			for pred in self.predicates :
+				if pred not in getAllValues( act[ 'effect' ] , 'name' ) :
+					act[ 'persistence' ].append( { 'name' : pred , 'state' : True } )

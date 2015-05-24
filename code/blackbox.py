@@ -7,7 +7,7 @@ from solver import Solver
 VAR_DELIMITER = '_'
 DEBUG = False
 
-class GraphPlan( Solver ) :
+class Blackbox( Solver ) :
 	def __init__( self , stripsfile ) :
 		self.domain = convertToJson( stripsfile )
 		self.implications = []
@@ -16,81 +16,8 @@ class GraphPlan( Solver ) :
 		self.var = {}
 		self.steps = 0
 
-	def preprocess( self , situationfile ) :
-		'''
-		self.getStartAndGoal( situationfile )
-		self.directory = os.path.dirname( situationfile )
-		# Get how many variables has for each type (extracted from start and goal)
-		for pred in self.start :
-			name = pred[ 'name' ]
-			params = pred[ 'parameters' ]
-			obj = self.searchInDomain( name )
-			for i in range( len( obj[ 'parameters' ] ) ) :
-				typ = obj[ 'parameters' ][ i ][ 1 ]
-				if typ not in self.var : self.var[ typ ] = []
-				if params[ i ] not in self.var[ typ ] :
-					self.var[ typ ].append( params[ i ] )
-		for goal in self.goal :
-			name = goal[ 'name' ]
-			params = goal[ 'parameters' ]
-			obj = self.searchInDomain( name )
-			for i in range( len( obj[ 'parameters' ] ) ) :
-				typ = obj[ 'parameters' ][ i ][ 1 ]
-				if typ not in self.var : self.var[ typ ] = []
-				if params[ i ] not in self.var[ typ ] :
-					self.var[ typ ].append( params[ i ] )
-		# Evaluate predicates with all variables detected
-		for pred in self.domain[ 'predicates' ] :
-			self.predicates.extend( self.evaluateWith( pred.copy() , isAction = False ) )
-		# Evaluate actions with all variables detected
-		for act in self.domain[ 'actions' ] :
-			self.actions.extend( self.evaluateWith( act.copy() , isAction = True ) )
-		# Get full description for start propositions
-		for i in range( len( self.start ) ) :
-			name = self.start[ i ][ 'name' ]
-			for p in self.start[ i ][ 'parameters' ] :
-				name += VAR_DELIMITER + p
-			self.start[ i ] = { 'name' : name , 'state' : True }
-		for pred in self.predicates :
-			if pred not in getAllValues( self.start , 'name' ) :
-				self.start.append( { 'name' : pred , 'state' : False } )
-		for act in self.actions :
-			for pre in getAllValues( act[ 'precondition' ] , 'name' ) :
-				if pre not in getAllValues( self.start , 'name' ) :
-					self.start.append( { 'name' : pre , 'state' : False } )
-		#print " ======== START ======== "
-		#for x in self.start : print x
-		# Get full name for goal propositions
-		for i in range( len( self.goal ) ) :
-			name = self.goal[ i ][ 'name' ]
-			for p in self.goal[ i ][ 'parameters' ] :
-				name += VAR_DELIMITER + p
-			self.goal[ i ] = { 'name' : name , 'state': True }
-		#print " ======== GOAL ======== "
-		#for x in self.goal : print x
-		# Update list of predicates with not recognized propositions at init
-		for p in getAllValues( self.start , 'name' ) :
-			if p not in self.predicates : self.predicates.append( p )
-		#print " ======== PREDICATES ======== "
-		#for x in self.predicates : print x
-		self.idpredicates = 1
-		self.idactions = len( self.predicates ) + 1
-		self.total = len( self.predicates ) + len( self.actions )
-		# Get all predicates that are not affected by every action
-		for act in self.actions :
-			act[ 'persistence' ] = []
-			for pred in self.predicates :
-				if pred not in getAllValues( act[ 'effect' ] , 'name' ) :
-					act[ 'persistence' ].append( { 'name' : pred , 'state' : True } )
-		#print " ======== ACTIONS ======== "
-		#for x in self.actions : print x
-		'''
-
-		print "#PREDICATES = %s" % len( self.predicates )
-		print "#ACTIONS = %s" % len( self.actions )
-		print "#IMPLICATIONS = %s" % len( self.implications )
-		#print " ======== VAR ======== "
-		#for ( typ , lstvars ) in self.var.iteritems() : print "%s: %s" % ( typ , lstvars )
+	def preprocess( self ) :
+		print 'gg'
 	
 	def getID( self , prop ) :
 		'''
@@ -211,7 +138,7 @@ if __name__ == "__main__" :
 	if len( sys.argv ) >= 3 :
 		if len( sys.argv ) > 3 : DEBUG = sys.argv[ 3 ]
 		stripsfile = sys.argv[ 1 ]
-		solver = GraphPlan( stripsfile )
+		solver = Blackbox( stripsfile )
 		situationfile = sys.argv[ 2 ]
 		solver.solve( situationfile )
 	else :

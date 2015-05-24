@@ -1,0 +1,23 @@
+( define ( domain cake )
+	( :requirements :strips :typing :equality )
+	( :types food )
+	( :predicates
+		( have ?x - food )
+		( eaten ?x - food )
+	)
+
+	( :action eat
+		:parameters ( ?x - food )
+		:precondition ( have ?x )
+		:effect ( and
+			( not ( have ?x ) )
+			( eaten ?x )
+		)
+	)
+
+	( :action bake
+		:parameters ( ?x - food )
+		:precondition ( not ( have ?x ) )
+		:effect ( have ?x )
+	)
+)
