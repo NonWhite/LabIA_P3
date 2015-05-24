@@ -1,6 +1,4 @@
 import sys
-import os
-from converter import *
 from utils import *
 from solver import Solver
 
@@ -8,16 +6,17 @@ VAR_DELIMITER = '_'
 DEBUG = False
 
 class Blackbox( Solver ) :
-	def __init__( self , stripsfile ) :
-		self.domain = convertToJson( stripsfile )
-		self.implications = []
-		self.predicates = []
-		self.actions = []
-		self.var = {}
-		self.steps = 0
-
 	def preprocess( self ) :
-		print 'gg'
+		print "======== START ========"
+		for x in self.start : print x
+		print "======== GOAL ========"
+		for x in self.goal : print x
+		print "======== PREDICATES ========"
+		for x in self.predicates : print x
+		print "======== ACTIONS ========"
+		for x in self.actions : print x
+		print "======== VAR ========"
+		for ( typ , vals ) in self.var.iteritems() : print "%s: %s" % ( typ , vals )
 	
 	def getID( self , prop ) :
 		'''

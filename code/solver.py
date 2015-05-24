@@ -1,6 +1,7 @@
 import os
 import re
 import time
+from converter import *
 from utils import *
 from subprocess import call
 from copy import deepcopy as copy
@@ -9,6 +10,14 @@ VAR_DELIMITER = '_'
 SATSOLVER = './../satsolver/zchaff'
 
 class Solver :
+	def __init__( self , stripsfile ) :
+		self.domain = convertToJson( stripsfile )
+		self.implications = []
+		self.predicates = []
+		self.actions = []
+		self.var = {}
+		self.steps = 0
+
 	def getParameters( self , s ) :
 		props = s.replace( '\n' , '' ).split( ';' )
 		for i in range( len( props ) ) :
