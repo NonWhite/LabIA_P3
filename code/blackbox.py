@@ -1,4 +1,5 @@
 import sys
+import collections
 from utils import *
 from solver import Solver
 from copy import deepcopy as copy
@@ -133,7 +134,7 @@ class Blackbox( Solver ) :
 							self.graph[ act1 ][ 'mutex' ].append( act2 )
 							break
 		# Literal Mutex in new level
-		self.steps += 1 # <-------------------------------------------------------------------
+		self.steps += 1
 		start = self.steps * self.total + 1
 		end = start + len( self.predicates )
 		# Negation of literals
@@ -161,43 +162,61 @@ class Blackbox( Solver ) :
 					self.graph[ ef1 ][ 'mutex' ].append( ef2 )
 		self.printgraphrelations()
 
+	def getPreconditionActions( self , actionID ) :
+		isnegation = False
+		if actionID < 0 :
+			isnegation = True
+			actionID = -actionID
+		lvl = actionID / ( self.total + 1 )
+		pos = ( actionID % ( self.total + 1 ) ) - 1
+		pos -= len( self.predicates )
+		resp = self.actions[ pos ]
+		print resp
+		print lvl , pos
+		resp = []
+		return [ str( pos ) ]
+
+	# TODO
+	def getActionWithEffect( self , effects ) :
+		return ''
+
 	# TODO
 	# Convert propositions in CNF File
 	def generateCNF( self ) :
-		'''
 		filename = "%s/%s%s%s.cnf" % ( self.directory , self.domain[ 'domain_name' ] , VAR_DELIMITER , self.steps )
-		numvars = len( self.predicates ) + self.total * self.steps
-		numclauses = len( self.implications ) + len( self.start ) + len( self.goal )
-		f = open( filename , 'w' )
+		clauses = []
 		print "Generating %s" % filename
+		# TODO: Clauses for satisfying goal
+		clauses.append( [ str( self.total * self.steps + len( self.predicates ) + 1 ) ] )
+		# TODO: Clauses by levels
+		for lvl in range( self.steps , 0 , -1 ) :
+			start = ( lvl - 1 ) * self.total + len( self.predicates ) + 1
+			end = start + len( self.actions )
+			for actid in range( start , end ) :
+				if actid not in self.nodes : continue
+				# Clauses type 1: Action preconditions
+				lstPreAct = self.getPreconditionActions( actid )
+				cl = [ str( -actid ) ]
+				cl.extend( lstPreAct )
+				if len( cl ) > 1 : clauses.append( cl )
+				# Clauses type 2: Only one of the actions
+				for x in lstPreAct :
+					for y in lstPreAct :
+						if x == y : continue
+						clauses.append( [ str( -x ) , str( -y ) ] )
+				# TODO: Clauses type 3: Mutex
+		var = []
+		for cl in clauses : var.extend( [ abs( int( x ) ) for x in cl ] )
+		var = sorted( list( collections.Counter( var ) ) )
+		# Print in CNF file
+		numvars = len( var )
+		numclauses = len( clauses )
+		f = open( filename , 'w' )
 		f.write( "p cnf %s %s\n" % ( numvars , numclauses ) )
-		# Add start propositions
-		for prop in self.start :
-			if 'time' not in prop : prop[ 'time' ] = 0
-			if 'isaction' not in prop : prop[ 'isaction' ] = False
-			if DEBUG : f.write( "%s%s(0)\n" % ( "NOT " if not prop[ 'state' ] else "" , prop[ 'name' ] ) )
-			f.write( "%s 0\n" % self.getID( prop ) )
-		# Add all axioms
-		for imp in self.implications :
-			left = imp[ 'left' ]
-			right = imp[ 'right' ]
-			factor = ( 1 if right == None else -1 )
-			for ifc in left :
-				if DEBUG : f.write( "%s%s(%s) %s" % ( "NOT " if not ifc[ 'state' ] else "" , ifc[ 'name' ] , ifc[ 'time' ] , "AND " if len( left ) > 1 else "" ) )
-				f.write( "%s " % ( factor * self.getID( ifc ) ) )
-			if DEBUG :
-				if right != None : f.write( " => %s%s(%s)\n" % ( "NOT " if not right[ 'state' ] else "" , right[ 'name' ] , right[ 'time' ] ) )
-				else : f.write( "\n" )
-			f.write( "%s 0\n" % self.getID( right ) )
-		# Add goal propositions
-		for prop in self.goal :
-			prop[ 'time' ] = self.steps
-			prop[ 'isaction' ] = False
-			if DEBUG : f.write( "%s%s(%s)\n" % ( "NOT " if not prop[ 'state' ] else "" , prop[ 'name' ] , self.steps ) )
-			f.write( "%s 0\n" % self.getID( prop ) )
-
+		for cl in clauses :
+			f.write( ' '.join( cl ) )
+			f.write( ' 0\n' )
 		return filename
-		'''
 	
 	def debug( self ) :
 		print "======== START ========"
