@@ -1,25 +1,40 @@
 import sys
 from utils import *
 from solver import Solver
+from copy import deepcopy as copy
 
 VAR_DELIMITER = '_'
 DEBUG = False
 
 class Blackbox( Solver ) :
 	def preprocess( self ) :
-		print "======== START ========"
-		for x in self.start : print x
-		print "======== GOAL ========"
-		for x in self.goal : print x
-		print "======== PREDICATES ========"
-		for x in self.predicates : print x
-		print "======== ACTIONS ========"
-		for x in self.actions : print x
-		print "======== VAR ========"
-		for ( typ , vals ) in self.var.iteritems() : print "%s: %s" % ( typ , vals )
-	
+		# Add maintaining actions for predicates
+		states = [ True , False ]
+		notident = [ '' , 'not_' ]
+		for prop in self.predicates :
+			for i in range( len( states ) ) :
+				self.actions.append( {
+					'precondition' : [ { 'state' : states[ i ] , 'name' : prop } ] ,
+					'name' : 'maintain_%s%s' % ( notident[ i ] , prop ) ,
+					'persistence' : [] ,
+					'effect' : [ { 'state' : states[ i ] , 'name' : prop } ]
+				} )
+		self.total = len( self.predicates ) + len( self.actions )
+		# Put propositions that are true in array
+		self.nodes = {}
+		for prop in self.start :
+			prop[ 'time' ] = 0
+			prop[ 'isaction' ] = False
+			self.nodes[ self.getID( prop ) ] = prop
+		self.graph = {}
+		# Addding literal mutex inconsistence
+		for litid in self.nodes :
+			if -litid in self.nodes :
+				if litid not in self.graph : self.graph[ litid ] = []
+				self.graph[ litid ].append( -litid )
+		#self.debug()
+
 	def getID( self , prop ) :
-		'''
 		if prop == None : return ''
 		time = prop[ 'time' ]
 		pos = 0
@@ -32,10 +47,8 @@ class Blackbox( Solver ) :
 		ID = pos + time * self.total
 		if not prop[ 'state' ] : ID = -ID
 		return ID
-		'''
 	
 	def getProposition( self , ID ) :
-		'''
 		isnegation = False
 		if ID < 0 :
 			isnegation = True
@@ -49,8 +62,106 @@ class Blackbox( Solver ) :
 			resp = self.predicates[ pos ]
 		resp = ( "~" if isnegation else "" ) + resp
 		return resp
-		'''
 
+	def addAction( self ) :
+		currentActs = []
+		allIdPreds = []
+		newnode = { 'mutex' : [] , 'links' : [] }
+		preactions = {}
+		for act in self.actions :
+			ispossible = True
+			lstPreds = []
+			idPreds = []
+			# Check preconditions
+			for pred in act[ 'precondition' ] :
+				prop = formProposition( pred[ 'name' ] , pred[ 'state' ] , self.steps , False )
+				predID = self.getID( prop )
+				ispossible &= ( predID in self.nodes )
+				prop[ 'ID' ] = predID
+				lstPreds.append( prop )
+				idPreds.append( predID )
+			# If all preconditions exists
+			if ispossible :
+				prop = formProposition( act[ 'name' ] , True , self.steps , True )
+				self.nodes[ self.getID( prop ) ] = prop
+				actID = self.getID( prop )
+				currentActs.append( actID )
+				allIdPreds.append( idPreds )
+				# Link preconditions with action
+				for pred in lstPreds :
+					if pred[ 'ID' ] not in self.graph : self.graph[ pred[ 'ID' ] ] = copy( newnode )
+					self.graph[ pred[ 'ID' ] ][ 'links' ].append( actID )
+				# Link action with its effects
+				if actID not in self.graph : self.graph[ actID ] = copy( newnode )
+				lstEffects = []
+				for eff in act[ 'effect' ] : lstEffects.append( formProposition( eff[ 'name' ] , eff[ 'state' ] , self.steps + 1 , False ) )
+				for eff in lstEffects :
+					effID = self.getID( eff )
+					self.nodes[ effID ] = eff
+					if effID not in preactions : preactions[ effID ] = []
+					preactions[ effID ].append( actID )
+					self.graph[ actID ][ 'links' ].append( effID )
+		# self.printgraphrelations()
+		# Adding action mutex relations
+		for i in range( len( currentActs ) ) :
+			act1 = currentActs[ i ]
+			preconditions1 = allIdPreds[ i ]
+			for j in range( len( currentActs ) ) :
+				if i == j : continue
+				act2 = currentActs[ j ]
+				preconditions2 = allIdPreds[ j ]
+				if act2 in self.graph[ act1 ][ 'mutex' ] : continue
+				# Action Mutex inconsistence
+				for effid in self.graph[ act2 ][ 'links' ] :
+					if -effid in self.graph[ act1 ][ 'links' ] :
+						self.graph[ act1 ][ 'mutex' ].append( act2 )
+						break
+				if act2 in self.graph[ act1 ][ 'mutex' ] : continue
+				# Action Mutex interference
+				for effid in self.graph[ act2 ][ 'links' ] :
+					newid = effid * ( -1 if effid < 0 else 1 ) - self.total
+					newid = newid * ( 1 if effid < 0 else -1 )
+					if newid in preconditions1 :
+						self.graph[ act1 ][ 'mutex' ].append( act2 )
+						break
+				if act2 in self.graph[ act1 ][ 'mutex' ] : continue
+				# Action Mutex necessity: Have preconditions with mutex
+				for pre1 in preconditions2 :
+					if act2 in self.graph[ act1 ][ 'mutex' ] : break
+					for pre2 in preconditions1 :
+						if pre1 in self.graph[ pre2 ][ 'mutex' ] :
+							self.graph[ act1 ][ 'mutex' ].append( act2 )
+							break
+		# Literal Mutex in new level
+		self.steps += 1 # <-------------------------------------------------------------------
+		start = self.steps * self.total + 1
+		end = start + len( self.predicates )
+		# Negation of literals
+		for litid in range( start , end ) :
+			if litid not in self.nodes : continue
+			if -litid in self.nodes :
+				if litid not in self.graph : self.graph[ litid ] = copy( newnode )
+				self.graph[ litid ][ 'mutex' ].append( -litid )
+				if -litid not in self.graph : self.graph[ -litid ] = copy( newnode )
+				self.graph[ -litid ][ 'mutex' ].append( litid )
+		# All ways are insatisfiable
+		for ef1 in preactions :
+			for ef2 in preactions :
+				if ef1 == ef2 : continue
+				if ef2 in self.graph[ ef1 ][ 'mutex' ] : continue
+				act1 = preactions[ ef1 ]
+				act2 = preactions[ ef2 ]
+				needmutex = True
+				for x in act1 :
+					for y in act2 :
+						if x == y : needmutex = False # Come from same action
+						needmutex &= ( x in self.graph[ y ][ 'mutex' ] )
+				if needmutex :
+					if ef1 not in self.graph : self.graph[ ef1 ] = copy( newnode )
+					self.graph[ ef1 ][ 'mutex' ].append( ef2 )
+		self.printgraphrelations()
+
+	# TODO
 	# Convert propositions in CNF File
 	def generateCNF( self ) :
 		'''
@@ -88,50 +199,26 @@ class Blackbox( Solver ) :
 		return filename
 		'''
 	
-	def addAction( self ) :
-		'''
-		# Add axioms of preconditions
-		for act in self.actions :
-			left = [ formProposition( act[ 'name' ] , True , self.steps , True ) ]
-			for pre in act[ 'precondition' ] :
-				right = formProposition( pre[ 'name' ] , pre[ 'state' ] , self.steps , False )
-				self.implications.append( { 'left' : left , 'right' : right } )
-		# Add axioms of effect
-		for act in self.actions :
-			left = [ formProposition( act[ 'name' ] , True , self.steps , True ) ]
-			for pre in act[ 'effect' ] :
-				right = formProposition( pre[ 'name' ] , pre[ 'state' ] , self.steps + 1 , False )
-				self.implications.append( { 'left' : left , 'right' : right } )
-		# Add axioms of persistence
-		for act in self.actions :
-			for pers in act[ 'persistence' ] :
-				left = [ formProposition( act[ 'name' ] , True , self.steps , True ) , \
-							formProposition( pers[ 'name' ] , True , self.steps , False ) ]
-				right = formProposition( pers[ 'name' ] , True , self.steps + 1 , False )
-				self.implications.append( { 'left' : left , 'right' : right } )
-				left = [ formProposition( act[ 'name' ] , True , self.steps , True ) , \
-							formProposition( pers[ 'name' ] , False , self.steps , False ) ]
-				right = formProposition( pers[ 'name' ] , False , self.steps + 1 , False )
-				self.implications.append( { 'left' : left , 'right' : right } )
-		# Add axioms of continuity
-		left = []
-		for act in self.actions :
-			left.append( formProposition( act[ 'name' ] , True , self.steps , True ) )
-		self.implications.append( { 'left' : left , 'right' : None } )
-		# Add axioms of not paralelism
-		for i in range( len( self.actions ) ) :
-			left1 = [ formProposition( self.actions[ i ][ 'name' ] , True , self.steps , True ) ]
-			#left2 = [ formProposition( self.actions[ i ][ 'name' ] , False , self.steps , True ) ]
-			for j in range( len( self.actions ) ) :
-				if i == j : continue
-				right1 = formProposition( self.actions[ j ][ 'name' ] , False , self.steps , True )
-				#right2 = formProposition( self.actions[ j ][ 'name' ] , True , self.steps , True )
-				self.implications.append( { 'left' : left1 , 'right' : right1 } )
-				#self.implications.append( { 'left' : left2 , 'right' : right2 } )
-
-		self.steps += 1
-		print "#IMPLICATIONS = %s" % len( self.implications )
-		'''
+	def debug( self ) :
+		print "======== START ========"
+		for x in self.start : print x
+		print "======== GOAL ========"
+		for x in self.goal : print x
+		print "======== PREDICATES ========"
+		for x in self.predicates : print x
+		print "======== ACTIONS ========"
+		for x in self.actions : print x
+		print "======== VAR ========"
+		for x in self.var : print "%s: %s" % ( x , self.var[ x ] )
+		self.printgraphrelations()
+	
+	def printgraphrelations( self ) :
+		print "======== GRAPH ========"
+		for x in self.nodes :
+			node = self.nodes[ x ]
+			reprs = '%s%s_%s' % ( '' if node[ 'state' ] else '~' , node[ 'name' ] , node[ 'time' ] )
+			childs = ' -> %s' % self.graph[ x ] if x in self.graph else ''
+			print '%s: %s%s' % ( x , reprs , childs )
 
 if __name__ == "__main__" :
 	if len( sys.argv ) >= 3 :

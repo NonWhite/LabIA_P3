@@ -228,23 +228,16 @@ class Solver :
 		self.getStartAndGoal( situationfile )
 		self.directory = os.path.dirname( situationfile )
 		# Get how many variables has for each type (extracted from start and goal)
-		# TODO: Use only one for for start and goal
-		for pred in self.start :
-			name = pred[ 'name' ]
-			params = pred[ 'parameters' ]
+		stg = []
+		for x in self.start : stg.append( x )
+		for x in self.goal : stg.append( x )
+		for prop in stg :
+			name = prop[ 'name' ]
+			params = prop[ 'parameters' ]
 			obj = self.searchInDomain( name )
 			for i in range( len( obj[ 'parameters' ] ) ) :
 				typ = obj[ 'parameters' ][ i ][ 1 ]
-				if typ not in self.var : self.var[ typ ] = []
-				if params[ i ] not in self.var[ typ ] :
-					self.var[ typ ].append( params[ i ] )
-		for goal in self.goal :
-			name = goal[ 'name' ]
-			params = goal[ 'parameters' ]
-			obj = self.searchInDomain( name )
-			for i in range( len( obj[ 'parameters' ] ) ) :
-				typ = obj[ 'parameters' ][ i ][ 1 ]
-				if typ not in self.var : self.var[ typ ] = []
+				if typ not in self.var: self.var[ typ ] = []
 				if params[ i ] not in self.var[ typ ] :
 					self.var[ typ ].append( params[ i ] )
 		# Evaluate predicates with all variables detected

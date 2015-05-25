@@ -3,7 +3,6 @@ import os
 from utils import *
 from solver import Solver
 
-VAR_DELIMITER = '_'
 DEBUG = False
 
 class SatPlan( Solver ) :
@@ -43,7 +42,7 @@ class SatPlan( Solver ) :
 
 	# Convert propositions in CNF File
 	def generateCNF( self ) :
-		filename = "%s/%s%s%s.cnf" % ( self.directory , self.domain[ 'domain_name' ] , VAR_DELIMITER , self.steps )
+		filename = "%s/%s_%s.cnf" % ( self.directory , self.domain[ 'domain_name' ] , self.steps )
 		numvars = len( self.predicates ) + self.total * self.steps
 		numclauses = len( self.implications ) + len( self.start ) + len( self.goal )
 		f = open( filename , 'w' )
