@@ -38,7 +38,6 @@
 	( :action stack
 		:parameters ( ?x - block ?y - block )
 		:precondition ( and
-            ( not ( = ?x ?y ) )
 			( holding ?x )
 			( clear ?y )
 		)
@@ -54,7 +53,6 @@
 	( :action unstack
 		:parameters ( ?x - block ?y - block )
 		:precondition ( and
-            ( not ( = ?x ?y ) )
 			( on ?x ?y )
 			( clear ?x )
 			( handempty )
