@@ -33,6 +33,23 @@ class Blackbox( Solver ) :
 			if -litid in self.nodes :
 				if litid not in self.graph : self.graph[ litid ] = []
 				self.graph[ litid ].append( -litid )
+		# Add relations between actions (preconditions and effects)
+		for act in self.actions : act[ 'previous' ] = []
+		for act1 in self.actions :
+			pred1 = act1[ 'precondition' ]
+			for p in pred1 :
+				resp = []
+				for i in range( len( self.actions ) ) :
+					eff2 = self.actions[ i ][ 'effect' ]
+					if p in eff2 : resp.append( i )
+				if len( resp ) > 0 : act1[ 'previous' ].append( resp )
+		self.endpreconditions = []
+		for g in self.goal :
+			resp = []
+			for i in range( len( self.actions ) ) :
+				effect = self.actions[ i ][ 'effect' ]
+				if g in effect : resp.append( i )
+			if len( resp ) > 0 : self.endpreconditions.append( resp )
 		#self.debug()
 
 	def getID( self , prop ) :
@@ -84,6 +101,7 @@ class Blackbox( Solver ) :
 			# If all preconditions exists
 			if ispossible :
 				prop = formProposition( act[ 'name' ] , True , self.steps , True )
+				prop[ 'previous' ] = act[ 'previous' ]
 				self.nodes[ self.getID( prop ) ] = prop
 				actID = self.getID( prop )
 				currentActs.append( actID )
@@ -102,7 +120,6 @@ class Blackbox( Solver ) :
 					if effID not in preactions : preactions[ effID ] = []
 					preactions[ effID ].append( actID )
 					self.graph[ actID ][ 'links' ].append( effID )
-		# self.printgraphrelations()
 		# Adding action mutex relations
 		for i in range( len( currentActs ) ) :
 			act1 = currentActs[ i ]
@@ -162,60 +179,99 @@ class Blackbox( Solver ) :
 					self.graph[ ef1 ][ 'mutex' ].append( ef2 )
 		self.printgraphrelations()
 
-	def getPreconditionActions( self , actionID ) :
-		isnegation = False
-		if actionID < 0 :
-			isnegation = True
-			actionID = -actionID
-		lvl = actionID / ( self.total + 1 )
-		pos = ( actionID % ( self.total + 1 ) ) - 1
-		pos -= len( self.predicates )
-		resp = self.actions[ pos ]
-		print resp
-		print lvl , pos
-		resp = []
-		return [ str( pos ) ]
+	def getPreconditionActions( self , actionID , isGoalAction = False ) :
+		lstPreds = []
+		if not isGoalAction :
+			# TODO
+			prop = self.nodes[ actionID ]
+			if prop[ 'time' ] < 1 : return []
+			for prearray in prop[ 'previous' ] :
+				resp = []
+				for idx in prearray :
+					p = self.actions[ idx ]
+					resp.append( formProposition( p[ 'name' ] , True , self.steps - 1 , True ) )
+				lstPreds.append( resp )
+		else :
+			for prearray in self.endpreconditions :
+				resp = []
+				for idx in prearray :
+					p = self.actions[ idx ]
+					resp.append( formProposition( p[ 'name' ] , True , self.steps - 1 , True ) )
+				lstPreds.append( resp )
+		for i in range( len( lstPreds ) ) :
+			lstPreds[ i ] = [ str( self.getID( x ) ) for x in lstPreds[ i ] ]
+		return lstPreds
 
-	# TODO
-	def getActionWithEffect( self , effects ) :
-		return ''
+	def standarize( self , goal , clauses ) :
+		impl = copy( goal )
+		impl.extend( clauses )
+		var = []
+		for x in impl : var.extend( [ abs( int( r ) ) for r in x ] )
+		var = list( collections.Counter( var ) )
+		positions = {}
+		for val in enumerate( var ) :
+			positions[ val[ 1 ] ] = val[ 0 ] + 1
+			positions[ -val[ 1 ] ] = -val[ 0 ] - 1
+		for i in range( len( impl ) ) :
+			for j in range( len( impl[ i ] ) ) :
+				impl[ i ][ j ] = str( positions[ int( impl[ i ][ j ] ) ] )
+		numvars = len( var )
+		return ( numvars , impl )
 
 	# TODO
 	# Convert propositions in CNF File
 	def generateCNF( self ) :
 		filename = "%s/%s%s%s.cnf" % ( self.directory , self.domain[ 'domain_name' ] , VAR_DELIMITER , self.steps )
-		clauses = []
 		print "Generating %s" % filename
-		# TODO: Clauses for satisfying goal
-		clauses.append( [ str( self.total * self.steps + len( self.predicates ) + 1 ) ] )
+		# Clauses for satisfying goal
+		goal = []
+		idgoal = self.total * self.steps + len( self.predicates ) + 1
+		goal.append( [ str( idgoal ) ] )
+		lstPreAct = self.getPreconditionActions( idgoal , True )
+		for prev in lstPreAct :
+			rule = [ str( -idgoal ) ]
+			for x in prev : rule.append( str( x ) )
+			goal.append( rule )
+		# TODO: Solo una de las acciones
+		# TODO: MUTEX de las precondiciones
 		# TODO: Clauses by levels
+		clauses = []
 		for lvl in range( self.steps , 0 , -1 ) :
 			start = ( lvl - 1 ) * self.total + len( self.predicates ) + 1
 			end = start + len( self.actions )
 			for actid in range( start , end ) :
 				if actid not in self.nodes : continue
+				print actid
 				# Clauses type 1: Action preconditions
 				lstPreAct = self.getPreconditionActions( actid )
-				cl = [ str( -actid ) ]
-				cl.extend( lstPreAct )
-				if len( cl ) > 1 : clauses.append( cl )
+				print "PRE = %s" % lstPreAct
+				for prev in lstPreAct :
+					rule = [ str( -actid ) ]
+					for x in prev : rule.append( str( x ) )
+					clauses.append( rule )
 				# Clauses type 2: Only one of the actions
-				for x in lstPreAct :
-					for y in lstPreAct :
-						if x == y : continue
-						clauses.append( [ str( -x ) , str( -y ) ] )
-				# TODO: Clauses type 3: Mutex
-		var = []
-		for cl in clauses : var.extend( [ abs( int( x ) ) for x in cl ] )
-		var = sorted( list( collections.Counter( var ) ) )
+				for prev in lstPreAct :
+					cl = []
+					for x in prev : cl.append( "-%s" % x )
+					print cl
+					clauses.append( cl )
+				# Clauses type 3: Mutex
+				for prev in lstPreAct :
+					for x in prev :
+						mutex = self.graph[ int( x ) ][ 'mutex' ]
+						for m in mutex :
+							if not self.nodes[ m ][ 'isaction' ] : continue
+							clauses.append( [ str( -actid ) , str( -m ) ] )
+		for cl in clauses :
+			for x in cl : print self.getProposition( int( x ) )
+		print clauses
+		# TODO: Standarized number of variables
+		( numvars , impl ) = self.standarize( goal , clauses )
+		numclauses = len( impl )
 		# Print in CNF file
-		numvars = len( var )
-		numclauses = len( clauses )
 		f = open( filename , 'w' )
 		f.write( "p cnf %s %s\n" % ( numvars , numclauses ) )
-		for cl in clauses :
-			f.write( ' '.join( cl ) )
-			f.write( ' 0\n' )
+		for cl in impl : f.write( "%s 0\n" % ' '.join( cl ) )
 		return filename
 	
 	def debug( self ) :
