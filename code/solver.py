@@ -139,34 +139,6 @@ class Solver :
 			self.addAction()
 			if self.isSolved() : break
 	
-	def extractSolution( self ) :
-		print "Extracting solution for %s" % self.domain[ 'domain_name' ]
-		filename = "%s/%s_%s.out" % ( self.directory , self.domain[ 'domain_name' ] , self.steps )
-		with open( filename , 'r' ) as f :
-			sol = []
-			for line in f :
-				if not line.startswith( 'v' ) : continue
-				sp = line.split()[ 1: ]
-				if '0' in sp : break
-				sol.extend( [ self.getProposition( int( w ) ) for w in sp ] )
-			idx = 0
-			resp = []
-			for k in range( self.steps + 1 ) :
-				count = 0
-				t = {}
-				while idx < len( sol ) and count < self.total :
-					if sol[ idx ].find( '~' ) < 0 :
-						if sol[ idx ] in getAllValues( self.actions , 'name' ) : t[ 'action' ] = sol[ idx ]
-						else :
-							if 'props' not in t : t[ 'props' ] = []
-							t[ 'props' ].append( sol[ idx ] )
-					idx += 1
-					count += 1
-				resp.append( t )
-		numvars = len( self.predicates ) + self.total * self.steps
-		numclauses = len( self.implications ) + len( self.start ) + len( self.goal )
-		return ( resp , numvars , numclauses ) 
-
 	def solve( self , situationfile ) :
 		outfile = situationfile.replace( '.in' , '.out' )
 		if os.path.isfile( outfile ) : return
@@ -179,32 +151,30 @@ class Solver :
 		elapsed_time = time.time() - start_time
 		self.saveSolution( solution , numvars , numclauses , elapsed_time , outfile )
 	
+	def parseSolution( self , cnfsolution ) :
+		'''
+		Implement this
+		'''
+	
+	def extractParameters( self , cnffile ) :
+		( numvars , numclauses ) = ( 1000 , 1000 )
+		with open( cnffile , 'r' ) as f :
+			line = ( f.readlines()[ 0 ] ).split()
+			( numvars , numclauses ) = ( int( line[ 2 ] ) , int( line[ 3 ] ) )
+		return ( numvars , numclauses )
+
 	def extractSolution( self ) :
 	 	print "Extracting solution for %s" % self.domain[ 'domain_name' ]
 		filename = "%s/%s_%s.out" % ( self.directory , self.domain[ 'domain_name' ] , self.steps )
-		numvars = len( self.predicates ) + self.total * self.steps
-		numclauses = len( self.implications ) + len( self.start ) + len( self.goal )
+		cnffile = "%s/%s_%s.cnf" % ( self.directory , self.domain[ 'domain_name' ] , self.steps )
+		( numvars , numclauses ) = self.extractParameters( cnffile )
+		resp = []
 		with open( filename , 'r' ) as f :
-			sol = []
 			for line in f :
 				sp = line.split()[ :numvars ]
 				if len( sp ) != numvars : continue
-				resp = []
-				sol.extend( [ self.getProposition( int( w ) ) for w in sp ] )
-				idx = 0
-				for k in range( self.steps + 1 ) :
-					count = 0
-					t = {}
-					while idx < len( sol ) and count < self.total :
-						if sol[ idx ].find( '~' ) < 0 :
-							if sol[ idx ] in getAllValues( self.actions , 'name' ) :
-								t[ 'action' ] = sol[ idx ]
-							else :
-								if 'props' not in t : t[ 'props' ] = []
-								t[ 'props' ].append( sol[ idx ] )
-						idx += 1
-						count += 1
-					resp.append( t )
+				if not isnumber( sp[ 0 ] ) : continue
+				resp = self.parseSolution( sp )
 				break
 		return ( resp , numvars , numclauses )
 	
