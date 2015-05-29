@@ -114,6 +114,25 @@ class SatPlan( Solver ) :
 
 		self.steps += 1
 		print "#IMPLICATIONS = %s" % len( self.implications )
+	
+	def parseSolution( self , cnfsolution ) :
+		sol = [ self.getProposition( int( w ) ) for w in cnfsolution ]
+		idx = 0
+		resp = []
+		for k in range( self.steps + 1 ) :
+			count = 0
+			t = {}
+			while idx < len( sol ) and count < self.total :
+				if sol[ idx ].find( '~' ) < 0 :
+					if sol[ idx ] in getAllValues( self.actions , 'name' ) :
+						t[ 'action' ] = sol[ idx ]
+					else :
+						if 'props' not in t : t[ 'props' ] = []
+						t[ 'props' ].append( sol[ idx ] )
+				idx += 1
+				count += 1
+			resp.append( t )
+		return resp
 
 if __name__ == "__main__" :
 	if len( sys.argv ) >= 3 :
