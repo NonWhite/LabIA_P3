@@ -178,47 +178,68 @@ class Blackbox( Solver ) :
 					if ef1 not in self.graph : self.graph[ ef1 ] = copy( newnode )
 					self.graph[ ef1 ][ 'mutex' ].append( ef2 )
 		self.printgraphrelations()
-
-	def getPreconditionActions( self , actionID , isGoalAction = False ) :
-		lstPreds = []
-		if not isGoalAction :
-			# TODO
-			prop = self.nodes[ actionID ]
-			if prop[ 'time' ] < 1 : return []
-			for prearray in prop[ 'previous' ] :
-				resp = []
-				for idx in prearray :
-					p = self.actions[ idx ]
-					resp.append( formProposition( p[ 'name' ] , True , self.steps - 1 , True ) )
-				lstPreds.append( resp )
-		else :
-			for prearray in self.endpreconditions :
-				resp = []
-				for idx in prearray :
-					p = self.actions[ idx ]
-					resp.append( formProposition( p[ 'name' ] , True , self.steps - 1 , True ) )
-				lstPreds.append( resp )
-		for i in range( len( lstPreds ) ) :
-			lstPreds[ i ] = [ str( self.getID( x ) ) for x in lstPreds[ i ] ]
-		return lstPreds
-
+	
 	def standarize( self , goal , clauses ) :
 		impl = copy( goal )
 		impl.extend( clauses )
 		var = []
 		for x in impl : var.extend( [ abs( int( r ) ) for r in x ] )
 		var = list( collections.Counter( var ) )
+		numvars = len( var )
 		positions = {}
 		for val in enumerate( var ) :
 			positions[ val[ 1 ] ] = val[ 0 ] + 1
 			positions[ -val[ 1 ] ] = -val[ 0 ] - 1
+		self.translator = {}
+		for ( key , value ) in positions.iteritems() : self.translator[ value ] = key
 		for i in range( len( impl ) ) :
 			for j in range( len( impl[ i ] ) ) :
 				impl[ i ][ j ] = str( positions[ int( impl[ i ][ j ] ) ] )
-		numvars = len( var )
 		return ( numvars , impl )
 
-	# TODO
+	def getPreconditionActions( self , actionID , isGoalAction = False ) :
+		lstPreds = []
+		prop = ( None if isGoalAction else self.nodes[ actionID ] )
+		if prop and prop[ 'time' ] < 1 : return []
+		previous = ( self.endpreconditions if isGoalAction else prop[ 'previous' ]	)
+		dec = ( 0 if not isGoalAction else 1 )
+		for prearray in previous :
+			resp = []
+			for idx in prearray :
+				p = self.actions[ idx ]
+				prop = formProposition( p[ 'name' ] , True , self.steps - dec , True )
+				if self.getID( prop ) not in self.nodes : continue
+				resp.append( prop )
+			lstPreds.append( resp )
+		for i in range( len( lstPreds ) ) :
+			lstPreds[ i ] = [ str( self.getID( x ) ) for x in lstPreds[ i ] ]
+		return lstPreds
+
+	def getPreactionClauses( self , actionID , isGoalAction = False ) :
+		clauses = []
+		lstPreAct = self.getPreconditionActions( actionID , isGoalAction )
+		# Clause for goal action
+		if isGoalAction : clauses.append( [ str( actionID ) ] )
+		# Clauses type 1: Action preconditions
+		for prev in lstPreAct :
+			rule = [ str( -actionID ) ]
+			for x in prev : rule.append( str( x ) )
+			if len( rule ) > 1 : clauses.append( rule )
+		# Clauses type 2: Only one of the actions per precondition
+		for prev in lstPreAct :
+			cl = []
+			for x in prev : cl.append( "-%s" % x )
+			if len( cl ) > 1 : clauses.append( cl )
+		# Clauses type 3: Mutex of actions for preconditions
+		for prev in lstPreAct :
+			for x in prev :
+				if int( x ) not in self.graph : continue
+				mutex = self.graph[ int( x ) ][ 'mutex' ]
+				for m in mutex :
+					if not self.nodes[ m ][ 'isaction' ] : continue
+					clauses.append( [ "-%s" % x , str( -m ) ] )
+		return clauses
+
 	# Convert propositions in CNF File
 	def generateCNF( self ) :
 		filename = "%s/%s%s%s.cnf" % ( self.directory , self.domain[ 'domain_name' ] , VAR_DELIMITER , self.steps )
@@ -226,46 +247,16 @@ class Blackbox( Solver ) :
 		# Clauses for satisfying goal
 		goal = []
 		idgoal = self.total * self.steps + len( self.predicates ) + 1
-		goal.append( [ str( idgoal ) ] )
-		lstPreAct = self.getPreconditionActions( idgoal , True )
-		for prev in lstPreAct :
-			rule = [ str( -idgoal ) ]
-			for x in prev : rule.append( str( x ) )
-			goal.append( rule )
-		# TODO: Solo una de las acciones
-		# TODO: MUTEX de las precondiciones
-		# TODO: Clauses by levels
+		goal.extend( self.getPreactionClauses( idgoal , True ) )
+		# Clauses by levels
 		clauses = []
 		for lvl in range( self.steps , 0 , -1 ) :
 			start = ( lvl - 1 ) * self.total + len( self.predicates ) + 1
 			end = start + len( self.actions )
 			for actid in range( start , end ) :
 				if actid not in self.nodes : continue
-				print actid
-				# Clauses type 1: Action preconditions
-				lstPreAct = self.getPreconditionActions( actid )
-				print "PRE = %s" % lstPreAct
-				for prev in lstPreAct :
-					rule = [ str( -actid ) ]
-					for x in prev : rule.append( str( x ) )
-					clauses.append( rule )
-				# Clauses type 2: Only one of the actions
-				for prev in lstPreAct :
-					cl = []
-					for x in prev : cl.append( "-%s" % x )
-					print cl
-					clauses.append( cl )
-				# Clauses type 3: Mutex
-				for prev in lstPreAct :
-					for x in prev :
-						mutex = self.graph[ int( x ) ][ 'mutex' ]
-						for m in mutex :
-							if not self.nodes[ m ][ 'isaction' ] : continue
-							clauses.append( [ str( -actid ) , str( -m ) ] )
-		for cl in clauses :
-			for x in cl : print self.getProposition( int( x ) )
-		print clauses
-		# TODO: Standarized number of variables
+				clauses.extend( self.getPreactionClauses( actid ) )
+		# Standarized number of variables
 		( numvars , impl ) = self.standarize( goal , clauses )
 		numclauses = len( impl )
 		# Print in CNF file
@@ -273,6 +264,18 @@ class Blackbox( Solver ) :
 		f.write( "p cnf %s %s\n" % ( numvars , numclauses ) )
 		for cl in impl : f.write( "%s 0\n" % ' '.join( cl ) )
 		return filename
+
+	# TODO
+	def parseSolution( self , cnfsolution ) :
+		print cnfsolution
+		print self.translator
+		idgoal = self.total * self.steps + len( self.predicates ) + 1
+		for x in cnfsolution :
+			valid = int( x )
+			if valid < 0 : continue
+			if self.translator[ valid ] == idgoal : continue
+			print self.nodes[ self.translator[ valid ] ]
+		return []
 	
 	def debug( self ) :
 		print "======== START ========"
