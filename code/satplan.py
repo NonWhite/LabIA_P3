@@ -42,7 +42,7 @@ class SatPlan( Solver ) :
 
 	# Convert propositions in CNF File
 	def generateCNF( self ) :
-		filename = "%s/%s_%s.cnf" % ( self.directory , self.domain[ 'domain_name' ] , self.steps )
+		filename = "%s/%s_%s_%s.cnf" % ( self.directory , self.domain[ 'domain_name' ] , self.algorithm , self.steps )
 		numvars = len( self.predicates ) + self.total * self.steps
 		numclauses = len( self.implications ) + len( self.start ) + len( self.goal )
 		f = open( filename , 'w' )
@@ -138,7 +138,7 @@ if __name__ == "__main__" :
 	if len( sys.argv ) >= 3 :
 		if len( sys.argv ) > 3 : DEBUG = sys.argv[ 3 ]
 		stripsfile = sys.argv[ 1 ]
-		solver = SatPlan( stripsfile )
+		solver = SatPlan( stripsfile , 'satplan' )
 		situationfile = sys.argv[ 2 ]
 		solver.solve( situationfile )
 	else :
