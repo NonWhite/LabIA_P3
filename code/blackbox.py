@@ -162,6 +162,9 @@ class Blackbox( Solver ) :
 				self.graph[ litid ][ 'mutex' ].append( -litid )
 				if -litid not in self.graph : self.graph[ -litid ] = copy( newnode )
 				self.graph[ -litid ][ 'mutex' ].append( litid )
+		for x in self.nodes :
+			if x not in self.graph :
+				self.graph[ x ] = copy( newnode )
 		# All ways are insatisfiable
 		for ef1 in preactions :
 			for ef2 in preactions :
@@ -177,7 +180,7 @@ class Blackbox( Solver ) :
 				if needmutex :
 					if ef1 not in self.graph : self.graph[ ef1 ] = copy( newnode )
 					self.graph[ ef1 ][ 'mutex' ].append( ef2 )
-		self.printgraphrelations()
+		#self.printgraphrelations()
 	
 	def standarize( self , goal , clauses ) :
 		impl = copy( goal )
@@ -202,17 +205,23 @@ class Blackbox( Solver ) :
 		prop = ( None if isGoalAction else self.nodes[ actionID ] )
 		if prop and prop[ 'time' ] < 1 : return []
 		previous = ( self.endpreconditions if isGoalAction else prop[ 'previous' ]	)
+		#print self.endpreconditions
 		dec = ( 0 if not isGoalAction else 1 )
+		allPreconditions = True
 		for prearray in previous :
 			resp = []
 			for idx in prearray :
 				p = self.actions[ idx ]
 				prop = formProposition( p[ 'name' ] , True , self.steps - dec , True )
-				if self.getID( prop ) not in self.nodes : continue
+				if self.getID( prop ) not in self.nodes :
+					allPreconditions = False
+					break
 				resp.append( prop )
 			lstPreds.append( resp )
 		for i in range( len( lstPreds ) ) :
 			lstPreds[ i ] = [ str( self.getID( x ) ) for x in lstPreds[ i ] ]
+		if isGoalAction and not allPreconditions :
+			lstPreds.extend( [ [ "-%s" % actionID ] ] )
 		return lstPreds
 
 	def getPreactionClauses( self , actionID , isGoalAction = False ) :
@@ -242,12 +251,11 @@ class Blackbox( Solver ) :
 
 	# Convert propositions in CNF File
 	def generateCNF( self ) :
-		filename = "%s/%s%s%s.cnf" % ( self.directory , self.domain[ 'domain_name' ] , VAR_DELIMITER , self.steps )
+		filename = "%s/%s%s%s%s%s.cnf" % ( self.directory , self.domain[ 'domain_name' ] , VAR_DELIMITER , self.algorithm , VAR_DELIMITER , self.steps )
 		print "Generating %s" % filename
 		# Clauses for satisfying goal
-		goal = []
 		idgoal = self.total * self.steps + len( self.predicates ) + 1
-		goal.extend( self.getPreactionClauses( idgoal , True ) )
+		goal = self.getPreactionClauses( idgoal , True )
 		# Clauses by levels
 		clauses = []
 		for lvl in range( self.steps , 0 , -1 ) :
@@ -262,20 +270,30 @@ class Blackbox( Solver ) :
 		# Print in CNF file
 		f = open( filename , 'w' )
 		f.write( "p cnf %s %s\n" % ( numvars , numclauses ) )
+		print "#IMPLICATIONS = %s" % numclauses
 		for cl in impl : f.write( "%s 0\n" % ' '.join( cl ) )
 		return filename
 
-	# TODO
 	def parseSolution( self , cnfsolution ) :
-		print cnfsolution
-		print self.translator
 		idgoal = self.total * self.steps + len( self.predicates ) + 1
+		size = 0
+		sol = {}
 		for x in cnfsolution :
 			valid = int( x )
-			if valid < 0 : continue
+			#if valid < 0 : continue
 			if self.translator[ valid ] == idgoal : continue
-			print self.nodes[ self.translator[ valid ] ]
-		return []
+			if self.translator[ valid ] not in self.nodes : continue
+			node = self.nodes[ self.translator[ valid ] ]
+			t = node[ 'time' ]
+			size = max( t + 1 , size )
+			if t not in sol : sol[ t ] = []
+			sol[ t ].append( node[ 'name' ] )
+			#print self.nodes[ self.translator[ valid ] ]
+		resp = []
+		for i in range( size ) :
+			if i not in sol : sol[ i ] = []
+			resp.append( { 'actions' : sol[ i ] , 'props' : [] } )
+		return resp
 	
 	def debug( self ) :
 		print "======== START ========"
@@ -302,7 +320,7 @@ if __name__ == "__main__" :
 	if len( sys.argv ) >= 3 :
 		if len( sys.argv ) > 3 : DEBUG = sys.argv[ 3 ]
 		stripsfile = sys.argv[ 1 ]
-		solver = Blackbox( stripsfile )
+		solver = Blackbox( stripsfile , 'blackbox' )
 		situationfile = sys.argv[ 2 ]
 		solver.solve( situationfile )
 	else :
