@@ -38,7 +38,7 @@
                 ]
             ], 
             "precondition": {
-                "prop": "and", 
+                "prop": "none", 
                 "terms": [
                     {
                         "name": "pointing", 
@@ -47,14 +47,6 @@
                             "d_prev"
                         ], 
                         "state": true
-                    }, 
-                    {
-                        "name": "=", 
-                        "parameters": [
-                            "d_new", 
-                            "d_prev"
-                        ], 
-                        "state": false
                     }
                 ]
             }
