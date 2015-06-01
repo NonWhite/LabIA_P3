@@ -171,14 +171,6 @@
                 "prop": "and", 
                 "terms": [
                     {
-                        "name": "=", 
-                        "parameters": [
-                            "x", 
-                            "y"
-                        ], 
-                        "state": false
-                    }, 
-                    {
                         "name": "holding", 
                         "parameters": [
                             "x"
@@ -249,14 +241,6 @@
             "precondition": {
                 "prop": "and", 
                 "terms": [
-                    {
-                        "name": "=", 
-                        "parameters": [
-                            "x", 
-                            "y"
-                        ], 
-                        "state": false
-                    }, 
                     {
                         "name": "on", 
                         "parameters": [
