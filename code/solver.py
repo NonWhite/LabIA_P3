@@ -10,8 +10,9 @@ VAR_DELIMITER = '_'
 SATSOLVER = './../satsolver/zchaff'
 
 class Solver :
-	def __init__( self , stripsfile ) :
+	def __init__( self , stripsfile , algorithm = 'default' ) :
 		self.domain = convertToJson( stripsfile )
+		self.algorithm = algorithm
 		self.implications = []
 		self.predicates = []
 		self.actions = []
@@ -88,26 +89,6 @@ class Solver :
 				act.pop( 'parameters' , '' )
 		return lst
 
-	def preprocess( self , situationfile ) :
-		'''
-		Implement this
-		'''
-	
-	def getID( self , prop ) :
-		'''
-		Implement this
-		'''
-	
-	def getProposition( self , ID ) :
-		'''
-		Implement this
-		'''
-
-	def generateCNF( self ) :
-		'''
-		Implement this
-		'''
-
 	def getStateFromCNF( self , cnffile ) :
 		print "Solving %s" % cnffile
 		satsolver = [ SATSOLVER , cnffile ]
@@ -129,18 +110,13 @@ class Solver :
 		cnffile = self.generateCNF()
 		return self.getStateFromCNF( cnffile )
 	
-	def addAction( self ) :
-		'''
-		Implement this
-		'''
-
 	def process( self ) :
 		while True :
 			self.addAction()
 			if self.isSolved() : break
 	
 	def solve( self , situationfile ) :
-		outfile = situationfile.replace( '.in' , '.out' )
+		outfile = situationfile.replace( '.in' , VAR_DELIMITER + self.algorithm + '.out' )
 		if os.path.isfile( outfile ) : return
 		start_time = time.time()
 		print "Pre-processing information in %s" % situationfile
@@ -151,11 +127,6 @@ class Solver :
 		elapsed_time = time.time() - start_time
 		self.saveSolution( solution , numvars , numclauses , elapsed_time , outfile )
 	
-	def parseSolution( self , cnfsolution ) :
-		'''
-		Implement this
-		'''
-	
 	def extractParameters( self , cnffile ) :
 		( numvars , numclauses ) = ( 1000 , 1000 )
 		with open( cnffile , 'r' ) as f :
@@ -165,8 +136,8 @@ class Solver :
 
 	def extractSolution( self ) :
 	 	print "Extracting solution for %s" % self.domain[ 'domain_name' ]
-		filename = "%s/%s_%s.out" % ( self.directory , self.domain[ 'domain_name' ] , self.steps )
-		cnffile = "%s/%s_%s.cnf" % ( self.directory , self.domain[ 'domain_name' ] , self.steps )
+		filename = "%s/%s_%s_%s.out" % ( self.directory , self.domain[ 'domain_name' ] , self.algorithm , self.steps )
+		cnffile = filename.replace( '.out' , '.cnf' )
 		( numvars , numclauses ) = self.extractParameters( cnffile )
 		resp = []
 		with open( filename , 'r' ) as f :
@@ -247,3 +218,34 @@ class Solver :
 			for pred in self.predicates :
 				if pred not in getAllValues( act[ 'effect' ] , 'name' ) :
 					act[ 'persistence' ].append( { 'name' : pred , 'state' : True } )
+	
+	def preprocess( self , situationfile ) :
+		'''
+		Implement this
+		'''
+	
+	def getID( self , prop ) :
+		'''
+		Implement this
+		'''
+	
+	def getProposition( self , ID ) :
+		'''
+		Implement this
+		'''
+
+	def generateCNF( self ) :
+		'''
+		Implement this
+		'''
+
+	def parseSolution( self , cnfsolution ) :
+		'''
+		Implement this
+		'''
+	
+	def addAction( self ) :
+		'''
+		Implement this
+		'''
+
