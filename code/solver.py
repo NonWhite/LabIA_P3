@@ -219,33 +219,39 @@ class Solver :
 				if pred not in getAllValues( act[ 'effect' ] , 'name' ) :
 					act[ 'persistence' ].append( { 'name' : pred , 'state' : True } )
 	
-	def preprocess( self , situationfile ) :
+	def preprocess( situationfile ) :
 		'''
 		Implement this
 		'''
+		raise NotImplementedError
 	
-	def getID( self , prop ) :
+	def getID( prop ) :
 		'''
 		Implement this
 		'''
+		raise NotImplementedError
 	
-	def getProposition( self , ID ) :
+	def getProposition( ID ) :
 		'''
 		Implement this
 		'''
+		raise NotImplementedError
 
-	def generateCNF( self ) :
+	def generateCNF( ) :
 		'''
 		Implement this
 		'''
+		raise NotImplementedError
 
-	def parseSolution( self , cnfsolution ) :
+	def parseSolution( cnfsolution ) :
 		'''
 		Implement this
 		'''
+		raise NotImplementedError
 	
-	def addAction( self ) :
+	def addAction( ) :
 		'''
 		Implement this
 		'''
+		raise NotImplementedError
 
