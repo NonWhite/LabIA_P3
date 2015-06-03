@@ -1,26 +1,5 @@
-TIME = 45.12
-PROPS = 1589
-CLAUSES = 163834
+TIME = 1.18
+PROPS = 140
+CLAUSES = 1040
 SIZE = 10
 SOLUTION
-on_a_f;ontable_b;ontable_e;ontable_c;ontable_d;ontable_f;clear_a;clear_b;clear_e;clear_c;clear_d;handempty
-unstack_a_f
-ontable_b;ontable_e;ontable_c;ontable_d;ontable_f;clear_b;clear_e;clear_c;clear_d;clear_f;holding_a
-stack_a_d
-on_a_d;ontable_b;ontable_e;ontable_c;ontable_d;ontable_f;clear_a;clear_b;clear_e;clear_c;clear_f;handempty
-pick-up_b
-on_a_d;ontable_e;ontable_c;ontable_d;ontable_f;clear_a;clear_e;clear_c;clear_f;holding_b
-stack_b_a
-on_a_d;on_b_a;ontable_e;ontable_c;ontable_d;ontable_f;clear_b;clear_e;clear_c;clear_f;handempty
-pick-up_c
-on_a_d;on_b_a;ontable_e;ontable_d;ontable_f;clear_b;clear_e;clear_f;holding_c
-stack_c_b
-on_a_d;on_b_a;on_c_b;ontable_e;ontable_d;ontable_f;clear_e;clear_c;clear_f;handempty
-pick-up_f
-on_a_d;on_b_a;on_c_b;ontable_e;ontable_d;clear_e;clear_c;holding_f
-stack_f_c
-on_a_d;on_b_a;on_c_b;on_f_c;ontable_e;ontable_d;clear_e;clear_f;handempty
-pick-up_e
-on_a_d;on_b_a;on_c_b;on_f_c;ontable_d;clear_f;holding_e
-stack_e_f
-on_a_d;on_b_a;on_e_f;on_c_b;on_f_c;ontable_d;clear_e;handempty

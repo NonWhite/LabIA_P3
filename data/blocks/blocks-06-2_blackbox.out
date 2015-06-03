@@ -1,46 +1,5 @@
-TIME = 316.06
-PROPS = 3099
-CLAUSES = 327584
+TIME = 10.13
+PROPS = 315
+CLAUSES = 1920
 SIZE = 20
 SOLUTION
-on_a_d;on_d_b;on_b_f;on_f_e;on_e_c;ontable_c;clear_a;handempty
-unstack_a_d
-on_d_b;on_b_f;on_f_e;on_e_c;ontable_c;clear_d;holding_a
-put-down_a
-on_d_b;on_b_f;on_f_e;on_e_c;ontable_a;ontable_c;clear_a;clear_d;handempty
-unstack_d_b
-on_b_f;on_f_e;on_e_c;ontable_a;ontable_c;clear_a;clear_b;holding_d
-put-down_d
-on_b_f;on_f_e;on_e_c;ontable_a;ontable_c;ontable_d;clear_a;clear_d;clear_b;handempty
-unstack_b_f
-on_f_e;on_e_c;ontable_a;ontable_c;ontable_d;clear_a;clear_d;clear_f;holding_b
-put-down_b
-on_f_e;on_e_c;ontable_a;ontable_c;ontable_d;ontable_b;clear_a;clear_d;clear_b;clear_f;handempty
-unstack_f_e
-on_e_c;ontable_a;ontable_c;ontable_d;ontable_b;clear_a;clear_d;clear_b;clear_e;holding_f
-put-down_f
-on_e_c;ontable_a;ontable_c;ontable_d;ontable_b;ontable_f;clear_a;clear_d;clear_b;clear_f;clear_e;handempty
-unstack_e_c
-ontable_a;ontable_c;ontable_d;ontable_b;ontable_f;clear_a;clear_c;clear_d;clear_b;clear_f;holding_e
-put-down_e
-ontable_a;ontable_c;ontable_d;ontable_b;ontable_f;ontable_e;clear_a;clear_c;clear_d;clear_b;clear_f;clear_e;handempty
-pick-up_c
-ontable_a;ontable_d;ontable_b;ontable_f;ontable_e;clear_a;clear_d;clear_b;clear_f;clear_e;holding_c
-stack_c_d
-on_c_d;ontable_a;ontable_d;ontable_b;ontable_f;ontable_e;clear_a;clear_c;clear_b;clear_f;clear_e;handempty
-pick-up_b
-on_c_d;ontable_a;ontable_d;ontable_f;ontable_e;clear_a;clear_c;clear_f;clear_e;holding_b
-stack_b_c
-on_c_d;on_b_c;ontable_a;ontable_d;ontable_f;ontable_e;clear_a;clear_b;clear_f;clear_e;handempty
-pick-up_a
-on_c_d;on_b_c;ontable_d;ontable_f;ontable_e;clear_b;clear_f;clear_e;holding_a
-stack_a_b
-on_a_b;on_c_d;on_b_c;ontable_d;ontable_f;ontable_e;clear_a;clear_f;clear_e;handempty
-pick-up_f
-on_a_b;on_c_d;on_b_c;ontable_d;ontable_e;clear_a;clear_e;holding_f
-stack_f_a
-on_a_b;on_c_d;on_b_c;on_f_a;ontable_d;ontable_e;clear_f;clear_e;handempty
-pick-up_e
-on_a_b;on_c_d;on_b_c;on_f_a;ontable_d;clear_f;holding_e
-stack_e_f
-on_a_b;on_c_d;on_b_c;on_f_a;on_e_f;ontable_d;clear_e;handempty

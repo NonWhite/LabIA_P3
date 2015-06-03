@@ -1,6 +1,6 @@
-TIME = 2.93
-PROPS = 451
-CLAUSES = 19894
+TIME = 0.52
+PROPS = 35
+CLAUSES = 273
 SIZE = 6
 SOLUTION
 on_c_b;ontable_a;ontable_d;ontable_b;clear_a;clear_c;clear_d;handempty

@@ -1,26 +1,10 @@
-TIME = 6.47
-PROPS = 727
-CLAUSES = 33130
+TIME = 0.11
+PROPS = 67
+CLAUSES = 608
 SIZE = 10
 SOLUTION
-on_b_c;on_c_a;on_a_d;ontable_d;clear_b;handempty
-unstack_b_c
-on_c_a;on_a_d;ontable_d;clear_c;holding_b
-put-down_b
-on_c_a;on_a_d;ontable_b;ontable_d;clear_b;clear_c;handempty
-unstack_c_a
-on_a_d;ontable_b;ontable_d;clear_b;clear_a;holding_c
-put-down_c
-on_a_d;ontable_b;ontable_d;ontable_c;clear_b;clear_c;clear_a;handempty
-unstack_a_d
-ontable_b;ontable_d;ontable_c;clear_b;clear_d;clear_c;holding_a
-stack_a_b
-on_a_b;ontable_b;ontable_d;ontable_c;clear_d;clear_c;clear_a;handempty
-pick-up_c
-on_a_b;ontable_b;ontable_d;clear_d;clear_a;holding_c
-stack_c_a
-on_c_a;on_a_b;ontable_b;ontable_d;clear_d;clear_c;handempty
-pick-up_d
-on_c_a;on_a_b;ontable_b;clear_c;holding_d
-stack_d_c
-on_d_c;on_c_a;on_a_b;ontable_b;clear_d;handempty
+
+
+
+
+

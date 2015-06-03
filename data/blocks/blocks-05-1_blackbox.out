@@ -1,25 +1,5 @@
-TIME = 23.15
-PROPS = 1116
-CLAUSES = 79770
+TIME = 1.43
+PROPS = 104
+CLAUSES = 618
 SIZE = 10
 SOLUTION
-on_b_a;on_a_d;ontable_e;ontable_c;ontable_d;clear_b;clear_e;clear_c;handempty
-unstack_b_a
-on_a_d;ontable_e;ontable_c;ontable_d;clear_e;clear_c;clear_a;holding_b
-put-down_b
-on_a_d;ontable_b;ontable_e;ontable_c;ontable_d;clear_b;clear_e;clear_c;clear_a;handempty;=_a_d
-ontable_b;ontable_e;ontable_c;ontable_d;clear_b;clear_e;clear_c;clear_d;holding_a
-stack_a_e
-on_a_e;ontable_b;ontable_e;ontable_c;ontable_d;clear_b;clear_c;clear_d;clear_a;handempty
-pick-up_b
-on_a_e;ontable_e;ontable_c;ontable_d;clear_c;clear_d;clear_a;holding_b
-stack_b_a
-on_b_a;on_a_e;ontable_e;ontable_c;ontable_d;clear_b;clear_c;clear_d;handempty
-pick-up_c
-on_b_a;on_a_e;ontable_e;ontable_d;clear_b;clear_d;holding_c
-stack_c_b
-on_b_a;on_c_b;on_a_e;ontable_e;ontable_d;clear_c;clear_d;handempty
-pick-up_d
-on_b_a;on_c_b;on_a_e;ontable_e;clear_c;holding_d
-stack_d_c
-on_b_a;on_c_b;on_d_c;on_a_e;ontable_e;clear_d;handempty
