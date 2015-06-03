@@ -1,0 +1,46 @@
+TIME = 658.04
+PROPS = 4186
+CLAUSES = 602692
+SIZE = 20
+SOLUTION
+on_e_g;on_g_b;on_b_a;on_a_f;on_f_c;on_c_d;ontable_d;clear_e;handempty
+unstack_e_g
+on_g_b;on_b_a;on_a_f;on_f_c;on_c_d;ontable_d;clear_g;holding_e
+put-down_e
+on_g_b;on_b_a;on_a_f;on_f_c;on_c_d;ontable_e;ontable_d;clear_e;clear_g;handempty
+unstack_g_b
+on_b_a;on_a_f;on_f_c;on_c_d;ontable_e;ontable_d;clear_e;clear_b;holding_g
+put-down_g
+on_b_a;on_a_f;on_f_c;on_c_d;ontable_e;ontable_d;ontable_g;clear_e;clear_g;clear_b;handempty
+unstack_b_a
+on_a_f;on_f_c;on_c_d;ontable_e;ontable_d;ontable_g;clear_e;clear_g;clear_a;holding_b
+stack_b_g
+on_b_g;on_a_f;on_f_c;on_c_d;ontable_e;ontable_d;ontable_g;clear_e;clear_b;clear_a;handempty
+unstack_a_f
+on_b_g;on_f_c;on_c_d;ontable_e;ontable_d;ontable_g;clear_e;clear_b;clear_f;holding_a
+put-down_a
+on_b_g;on_f_c;on_c_d;ontable_e;ontable_d;ontable_g;ontable_a;clear_e;clear_b;clear_a;clear_f;handempty
+unstack_f_c
+on_b_g;on_c_d;ontable_e;ontable_d;ontable_g;ontable_a;clear_e;clear_b;clear_a;clear_c;holding_f
+stack_f_e
+on_b_g;on_f_e;on_c_d;ontable_e;ontable_d;ontable_g;ontable_a;clear_b;clear_a;clear_f;clear_c;handempty
+unstack_c_d
+on_b_g;on_f_e;ontable_e;ontable_d;ontable_g;ontable_a;clear_d;clear_b;clear_a;clear_f;holding_c
+stack_c_f
+on_b_g;on_f_e;on_c_f;ontable_e;ontable_d;ontable_g;ontable_a;clear_d;clear_b;clear_a;clear_c;handempty
+unstack_b_g
+on_f_e;on_c_f;ontable_e;ontable_d;ontable_g;ontable_a;clear_d;clear_g;clear_a;clear_c;holding_b
+stack_b_c
+on_b_c;on_f_e;on_c_f;ontable_e;ontable_d;ontable_g;ontable_a;clear_d;clear_g;clear_b;clear_a;handempty
+pick-up_d
+on_b_c;on_f_e;on_c_f;ontable_e;ontable_g;ontable_a;clear_g;clear_b;clear_a;holding_d
+stack_d_b
+on_d_b;on_b_c;on_f_e;on_c_f;ontable_e;ontable_g;ontable_a;clear_d;clear_g;clear_a;handempty
+pick-up_g
+on_d_b;on_b_c;on_f_e;on_c_f;ontable_e;ontable_a;clear_d;clear_a;holding_g
+stack_g_d
+on_d_b;on_g_d;on_b_c;on_f_e;on_c_f;ontable_e;ontable_a;clear_g;clear_a;handempty
+pick-up_a
+on_d_b;on_g_d;on_b_c;on_f_e;on_c_f;ontable_e;clear_g;holding_a
+stack_a_g
+on_d_b;on_g_d;on_b_c;on_a_g;on_f_e;on_c_f;ontable_e;clear_a;handempty

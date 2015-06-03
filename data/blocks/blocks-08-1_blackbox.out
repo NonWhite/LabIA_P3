@@ -1,0 +1,46 @@
+TIME = 6117.60
+PROPS = 5437
+CLAUSES = 1022724
+SIZE = 20
+SOLUTION
+on_e_c;on_h_a;on_a_b;on_b_g;ontable_d;ontable_f;ontable_c;ontable_g;clear_e;clear_h;clear_d;clear_f;handempty
+unstack_h_a
+on_e_c;on_a_b;on_b_g;ontable_d;ontable_f;ontable_c;ontable_g;clear_e;clear_d;clear_f;clear_a;holding_h
+put-down_h
+on_e_c;on_a_b;on_b_g;ontable_h;ontable_d;ontable_f;ontable_c;ontable_g;clear_e;clear_h;clear_d;clear_f;clear_a;handempty
+unstack_e_c
+on_a_b;on_b_g;ontable_h;ontable_d;ontable_f;ontable_c;ontable_g;clear_h;clear_d;clear_f;clear_c;clear_a;holding_e
+put-down_e
+on_a_b;on_b_g;ontable_e;ontable_h;ontable_d;ontable_f;ontable_c;ontable_g;clear_e;clear_h;clear_d;clear_f;clear_c;clear_a;handempty
+unstack_a_b
+on_b_g;ontable_e;ontable_h;ontable_d;ontable_f;ontable_c;ontable_g;clear_e;clear_h;clear_d;clear_f;clear_c;clear_b;holding_a
+stack_a_e
+on_a_e;on_b_g;ontable_e;ontable_h;ontable_d;ontable_f;ontable_c;ontable_g;clear_h;clear_d;clear_f;clear_c;clear_a;clear_b;handempty
+pick-up_h
+on_a_e;on_b_g;ontable_e;ontable_d;ontable_f;ontable_c;ontable_g;clear_d;clear_f;clear_c;clear_a;clear_b;holding_h
+stack_h_a
+on_h_a;on_a_e;on_b_g;ontable_e;ontable_d;ontable_f;ontable_c;ontable_g;clear_h;clear_d;clear_f;clear_c;clear_b;handempty
+pick-up_f
+on_h_a;on_a_e;on_b_g;ontable_e;ontable_d;ontable_c;ontable_g;clear_h;clear_d;clear_c;clear_b;holding_f
+stack_f_h
+on_h_a;on_f_h;on_a_e;on_b_g;ontable_e;ontable_d;ontable_c;ontable_g;clear_d;clear_f;clear_c;clear_b;handempty
+unstack_b_g
+on_h_a;on_f_h;on_a_e;ontable_e;ontable_d;ontable_c;ontable_g;clear_d;clear_f;clear_c;clear_g;holding_b
+stack_b_c
+on_h_a;on_f_h;on_a_e;on_b_c;ontable_e;ontable_d;ontable_c;ontable_g;clear_d;clear_f;clear_g;clear_b;handempty
+pick-up_g
+on_h_a;on_f_h;on_a_e;on_b_c;ontable_e;ontable_d;ontable_c;clear_d;clear_f;clear_b;holding_g
+stack_g_f
+on_h_a;on_f_h;on_g_f;on_a_e;on_b_c;ontable_e;ontable_d;ontable_c;clear_d;clear_g;clear_b;handempty
+unstack_b_c
+on_h_a;on_f_h;on_g_f;on_a_e;ontable_e;ontable_d;ontable_c;clear_d;clear_c;clear_g;holding_b
+stack_b_g
+on_h_a;on_f_h;on_g_f;on_a_e;on_b_g;ontable_e;ontable_d;ontable_c;clear_d;clear_c;clear_b;handempty
+pick-up_d
+on_h_a;on_f_h;on_g_f;on_a_e;on_b_g;ontable_e;ontable_c;clear_c;clear_b;holding_d
+stack_d_b
+on_h_a;on_d_b;on_f_h;on_g_f;on_a_e;on_b_g;ontable_e;ontable_c;clear_d;clear_c;handempty
+pick-up_c
+on_h_a;on_d_b;on_f_h;on_g_f;on_a_e;on_b_g;ontable_e;clear_d;holding_c
+stack_c_d
+on_h_a;on_d_b;on_f_h;on_c_d;on_g_f;on_a_e;on_b_g;ontable_e;clear_c;handempty
