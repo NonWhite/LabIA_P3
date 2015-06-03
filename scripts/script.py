@@ -13,5 +13,5 @@ if __name__ == "__main__" :
 		for f in files :
 			satplan = ( SATPLAN % ( rulesfile , f ) ).split()
 			call( satplan )
-			#blackbox = ( BLACKBOX % ( rulesfile , f ) ).split()
-			#call( blackbox )
+			blackbox = ( BLACKBOX % ( rulesfile , f ) ).split()
+			call( blackbox )
