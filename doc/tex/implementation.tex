@@ -9,14 +9,14 @@ Os pasos para fazer o sistema de planejamento clássico (implementado em python)
 		\item Adicionamento de ações (aumento em tamanho do plano de solução)
 		\item Interprete de CNF para Json
 	\end{itemize}
-O pseudocódigo~\ref{lst:solver} mostra o algoritmo usado pelo sistema de planejamento para a busca de solução para um problema dado.
+O pseudocódigo~\ref{lst:solver} mostra o algoritmo usado pelo sistema de planejamento para a busca de solução para um problema dado (para SAT-Plan e Blackbox).
 	\renewcommand \lstlistingname{Pseudocódigo}
 	\begin{lstlisting}[ caption = Algoritmo de busca , label = lst:solver ]
 		Function Solve
 			While true
-				Add axioms for one more action |\label{code:addaxiom}|
+				Add axioms for one more level |\label{code:addaxiom}|
 				cnf = generate CNF |\label{code:gencnf}|
-				model = sat solver( cnf ) |\label{code:satsolver}|
+				model = SAT_Solver( cnf ) |\label{code:satsolver}|
 				If model exists then
 					Sol = extract solution |\label{code:extract}|
 					break
@@ -26,6 +26,16 @@ O pseudocódigo~\ref{lst:solver} mostra o algoritmo usado pelo sistema de planej
 		End Function
 	\end{lstlisting}
 As linhas~\ref{code:addaxiom}, \ref{code:gencnf} e \ref{code:extract} seram explicadas em~\ref{subsec:addaxioms}, \ref{subsec:jsoncnf} e \ref{subsec:cnfjson} respectivamente. Além, o SAT-solver da linha~\ref{code:satsolver} já está implementado e só sera usado. Toda a implementação está no archivo ${solver.py}$
+
+
+\subsection{Definições previas}
+	\subsubsection{SAT-Plan}
+	\label{subsub:satplan}
+		Este algoritmo muda todas as ações e fluentes em STRIPS para sentencias lógicas e usando um SAT-solver busca se existe uma solução para o problema, caso contrário adiciona um novo nível ao plano de solução.
+	
+	\subsubsection{Blackbox}
+	\label{subsub:blackbox}
+		A diferença de SAT-Plan, este algoritmo muda as ações e fluentes a um grafo, desta forma, não é necessário adicionar todas as ações e fluentes para um novo nível. Além, permite que mais de uma ação por nível seja executada adicionando o conceito de mutex (ou exclusão mutua), ou seja, faz relações entre ações que não podem ser feitas juntas (em~\ref{subsub:blackboxaxioms} será explicado melhor). Com esto pode reduzir o número de cláusulas do problema. Por último, muda o grafo para uma estructura CNF e usa um SAT-Solver para ver se existe uma solução, caso contrário adiciona um novo nível com só as ações e fluentes possíveis.
 
 \subsection{Parser de STRIPS para Json}
 \label{subsec:stripsjson}
@@ -96,14 +106,31 @@ As linhas~\ref{code:addaxiom}, \ref{code:gencnf} e \ref{code:extract} seram expl
 			if not prop[ 'state' ] : ID = -ID
 			return ID
 	\end{lstlisting}
-	
 	Uma vez que temos uma forma de obter um identificador para cada proposição podemos gerar o archivo CNF para cada tipo de cláusula no problema: estado inicial, axiomas e meta.
-	Por cada fluente no estado inicial vamos ter uma linha no archivo CNF com seu ID para o tempo 0. Da mesma forma para cada fluente na meta, mas estas vão ter tempo $n$ (tamanho do plano).
-	Por último, os axiomas são da forma $A_1 \land A_2 \land \ldots \land A_k \to B$ (com $k \geq 1$). Cada axioma é mudado para a forma $\lnot A_1 \lor \lnot A_2 \lor \ldots \lor \lnot A_k \lor B$ e colocado no archivo CNF.
+	Por cada fluente no estado inicial vamos ter uma linha no archivo CNF com seu ID para o tempo 0. Da mesma forma para cada fluente na meta, mas estas vão ter tempo $n$ (tamanho do plano). Mas para cada algoritmo a forma de mudar para o archivo CNF é diferente e será explicada nas subseções~\ref{subsub:jsoncnfsatplan} e~\ref{subsub:jsoncnfblackbox}.
+ 	
+ 	\subsubsection{Para SAT-Plan}
+	\label{subsub:jsoncnfsatplan}
+		Neste algoritmo temos todos os axiomas da forma $A_1 \land A_2 \land \ldots \land A_k \to B$ (com $k \geq 1$). Cada axioma é mudado para a forma $\lnot A_1 \lor \lnot A_2 \lor \ldots \lor \lnot A_k \lor B$ e colocado em uma linha no archivo CNF.
+		
+	\subsubsection{Para Blackbox}
+	\label{subsub:jsoncnfblackbox}
+		Em caso do algoritmo Blackbox como se diz na subseção~\ref{subsub:blackbox}, não se tem todos os axiomas se não só os possíveis até esse momento. Além, para mudar o grafo para um archivo CNF, não é necessário colocar os fluentes, só as relações entre todas as ações de cada nível do grafo da seguinte forma:
+		\begin{itemize}
+			\item Se adiciona uma ação $A_F$ que sempre vai ser $True$ e tem como precondições as metas
+			\item Desde o último nível de ações (tendo em conta também o nível com a ação $A_F$) se busca quais são seus precondições, ou seja ${Pre}( A_i )$.
+			\item Para cada precondição se busca quais são as ações que a adicionam, ou seja para cada $p \in {Pre}( A_i )$ se busca as ações $A_j$ tal que $p \in {Eff}( A_j )$.
+			\item Então para cada precondição de cada ação $A_i$ temos suas pre-ações (denotada por ${PreAct}( A_i )$ e adicionamos tres tipos de cláusulas:
+				\begin{itemize}
+					\item $A_i \to {Disj}( {PreAct}( A_i ) )$, onde ${Disj}( X )$ é a disjunção dos términos en $X$
+					\item ${Disj}( \lnot {PreAct}( A_i ) )$, onde a negação de ${PreAct}$ é a negação de cada um de seus términos e então ${Disj}$ disso é a disjunção de as negações das pre-ações de $A_i$
+					\item Por úlitmo, todas as relações de mutex das pre-ações de $A_i$ na forma $\lnot B_j \lor \lnot B_k$ onde $B_j$ e $B_k$ tem uma relação de mutex e ao menos um delos está em ${PreAct}( A_i )$
+				\end{itemize}
+		\end{itemize}
 	
-\subsection{Adicionamento de ações}
-\label{subsec:addaxioms}
-	Em cada iteração do algoritmo de busca especificado ao inicio da seção~\ref{sec:implementacao} vai ser adicionados axiomas (cláusulas) para todas as possíveis ações que existem no problema.\\
+\subsection{Adicionamento de níveis para SAT-Plan}
+\label{subsec:satplanaxioms}
+	Em cada iteração do algoritmo de busca especificado ao inicio da seção~\ref{sec:implementacao} vai ser adicionado um nível com os axiomas (cláusulas) para todas as possíveis ações que existem no problema.\\
 	Na definicão dada no bloco~\ref{lst:stripsaction} na subseção~\ref{subsec:strips} temos que cada ação tem precondições e efeitos.
 	\subsubsection{Axiomas de precondições}
 		Se dizemos que ${Pre}( A )^t$ é a conjunção das precondições de $A^t$ então para cada ação adicionamos axiomas da forma $A^t \to {P_i}^t$ (com ${P_i}^t\in Pre( A )^t$). Por ser precondições sempre ter que ser ao mesmo tempo da ação.
@@ -122,6 +149,35 @@ As linhas~\ref{code:addaxiom}, \ref{code:gencnf} e \ref{code:extract} seram expl
 		O axioma anterior permite que se façam mais de uma ação por instante de tempo, mas isso não é possível para solucionar o problema, então para cada par de ações adicionamos:
 		$\lnot {A_i}^t \lor \lnot {A_j}^t$, para $i \neq j$.\\
 	Adicionar todos os axiomas anteriores garantir que sempre se execute uma ação e só uma. Além, que sempre será executada uma ação que cumple seus precondições e por último extende seus efeitos ao próximo instante de tempo.
+	
+\subsection{Adicionamento de níveis para Blackbox}
+\label{subsec:blackboxaxioms}
+	Neste algoritmo, não é necessário adicionar todos os axiomas porque se terá uma estructura de grafo para saber quais fluentes e ações são possíveis. Então em cada iteração do algoritmo vai ser adicionados só as ações possíveis, ou seja, aquelas que tenham seus precondições como nós do grafo. Além, para todas as ações adicionadas, seus efeitos vai ser adicionados ao grafo.\\
+	As aristas do grafo são de tres tipos:
+	\begin{itemize}
+		\item De precondição
+		\item De efeito
+		\item Mutex
+	\end{itemize}
+	Os primeiros dois tipos são iguais aos especificados na seção~\ref{subsec:satplanaxioms}. A continuação será explicado o tercer tipo para ações em um mesmo nível.
+	\subsubsection{Mutex de ações inconsistentes}
+		Se um efeito de uma ação é a negação de um efeito de outra, então se adiciona uma relação de mutex entre elas. Ou seja para os casos que temos $p \in {Eff}( A_i )$ e $\lnot p \in {Eff}( A_j )$ para todo $i$ e $j$.
+	
+	\subsubsection{Mutex de interferência}
+		Se uma ação elimina uma precondição de outra, ou seja para os casos onde $p \in {Pre}( A_i )$ e $\lnot p \in {Eff}( A_j )$ para todo $i$ e $j$ também se adiciona uma relação de mutex entre elas.
+	
+	\subsubsection{Mutex de necessidades que competem}
+	\label{subsub:mutexcompetem}
+		Para cada par de ações $i$ e $j$, se adiciona uma relação de mutex se $p_1 \in {Pre}( A_i )$, $p_2 \in {Pre}( A_j )$ e existe uma relação de mutex entre as precondições $p_1$ e $p_2$.
+	
+	\subsubsection{Mutex entre fluentes}
+		Além de ter mutex entre ações também existem mutex entre fluentes, os que são necessários para adicionar os mutex em~\ref{subsub:mutexcompetem}. Só existem dois condições para que dois fluentes tenham uma relação de mutex:
+		\begin{itemize}
+			\item Um é a negação de outro (se temos $p$ e $\lnot p$ à vez)
+			\item Se todas as maneiras de satisfazê-los são mutex
+		\end{itemize}
+
+	Adicionar todos os axiomas anteriores garantir que pode ser executadas mais de uma ação por nível se e só se não tenham uma relação de mutex entre elas.
 	
 \subsection{Interprete de CNF para Json}
 \label{subsec:cnfjson}
