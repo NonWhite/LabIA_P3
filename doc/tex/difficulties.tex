@@ -1,0 +1,10 @@
+\section{Dificuldades no projeto}
+Durante a implementação do projeto se tiveram algumas dificuldades mencionadas a continuação:
+\begin{itemize}
+	\item Implementar o parser de STRIPS para o formato Json implicava usar expressões regulares de forma correta considerando todos os casos possíveis
+	\item Encontrar uma formula para ter um índice único para cada proposição no problema
+	\item A extração da solução tinha que fazer o contrario à função que encontrava um ID para cada proposição sem errar
+	\item Mudar do grafo em Blackbox para um archivo CNF porque tinha muito pre-processamento ao momento de encontrar as pre-ações de cada ação
+	\item Implementar as relações de mutex em Blackbox
+	\item Encontrar a forma de dizer que as metas não se encontravam no último nível e portanto esse CNF não era satisfazível. A solução foi colocar duas cláusulas da forma $p$ e $\lnot p$, desta forma nunca sería verdadeiro todo esse modelo porque ambas não podem ser verdade à vez
+\end{itemize}
