@@ -1,8 +1,11 @@
 \section{Conclusões}
 	Pode-se concluir em geral que:\\
 	\begin{itemize}
-		\item O tamanho do plano de solução pode ser similar para diferentes valores de variáveis
-		\item Enquanto o número de valores de variáveis aumenta, o número de cláusulas também vai aumentar, da mesma forma o número de proposições e o tempo de execução.
-		\item O número de cláusulas é exponencial em número de variáveis e esto também afeita diretamente ao tempo de execução
+		\item O tamanho do plano de solução pode ser similar para diferentes valores de variáveis independentemente do algoritmo usado
+		\item Blackbox tem um melhor tempo de execução comparado com SAT-Plan e encontra um plano de solução do mesmo tamanho que SAT-Plan devido a que só usa proposições de ações possíveis
+		\item Enquanto o número de valores de variáveis aumenta, o número de cláusulas também vai aumentar, da mesma forma o número de proposições e o tempo de execução para ambos algoritmos
+		\item O número de cláusulas é exponencial em número de variáveis para o algoritmo SAT-Plan e afeitando diretamente ao tempo de execução, mas para Blackbox, o número de cláusulas não tem cambios consideráveis porque tem menos cláusulas e só usa os axiomas de ações
+		\item Blackbox é uma melhor opção que SAT-Plan porque reduz consideravelmente o tempo de execução e a memoria usada na busca de uma solução ao problema
+		\item A diferença mais importante entre Blackbox e SAT-Plan é a forma que muda de sua estrutura (axiomas em SAT-Plan e grafo em Blackbox) para um archivo CNF porque o primeiro usa menos cláusulas no archivo para encontrar a solução
 	\end{itemize}
 \clearpage

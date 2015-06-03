@@ -25,8 +25,7 @@ O pseudocódigo~\ref{lst:solver} mostra o algoritmo usado pelo sistema de planej
 			Return Sol
 		End Function
 	\end{lstlisting}
-As linhas~\ref{code:addaxiom}, \ref{code:gencnf} e \ref{code:extract} seram explicadas em~\ref{subsec:addaxioms}, \ref{subsec:jsoncnf} e \ref{subsec:cnfjson} respectivamente. Além, o SAT-solver da linha~\ref{code:satsolver} já está implementado e só sera usado. Toda a implementação está no archivo ${solver.py}$
-
+A linha~\ref{code:addaxiom} será explicada nas seções~\ref{subsec:satplanaxioms} e~\ref{subsec:blackboxaxioms} para o algoritmo SAT-Plan e Blackbox respectivamente. Além,as linhas~\ref{code:gencnf} e \ref{code:extract} seram explicadas nas subseções \ref{subsec:jsoncnf} e \ref{subsec:cnfjson} respectivamente. Por último, o SAT-solver da linha~\ref{code:satsolver} já está implementado e só sera usado. Toda a implementação está no archivo ${solver.py}$, mas as funções específicas de cada algoritmo estão nos archivos ${satplan.py}$ e ${blackbox.py}$ para cada algoritmo do mesmo nome.
 
 \subsection{Definições previas}
 	\subsubsection{SAT-Plan}
@@ -35,7 +34,7 @@ As linhas~\ref{code:addaxiom}, \ref{code:gencnf} e \ref{code:extract} seram expl
 	
 	\subsubsection{Blackbox}
 	\label{subsub:blackbox}
-		A diferença de SAT-Plan, este algoritmo muda as ações e fluentes a um grafo, desta forma, não é necessário adicionar todas as ações e fluentes para um novo nível. Além, permite que mais de uma ação por nível seja executada adicionando o conceito de mutex (ou exclusão mutua), ou seja, faz relações entre ações que não podem ser feitas juntas (em~\ref{subsub:blackboxaxioms} será explicado melhor). Com esto pode reduzir o número de cláusulas do problema. Por último, muda o grafo para uma estructura CNF e usa um SAT-Solver para ver se existe uma solução, caso contrário adiciona um novo nível com só as ações e fluentes possíveis.
+		A diferença de SAT-Plan, este algoritmo muda as ações e fluentes a um grafo, desta forma, não é necessário adicionar todas as ações e fluentes para um novo nível. Além, permite que mais de uma ação por nível seja executada adicionando o conceito de mutex (ou exclusão mutua), ou seja, faz relações entre ações que não podem ser feitas juntas (em~\ref{subsec:blackboxaxioms} será explicado melhor). Com esto pode reduzir o número de cláusulas do problema. Por último, muda o grafo para uma estructura CNF e usa um SAT-Solver para ver se existe uma solução, caso contrário adiciona um novo nível com só as ações e fluentes possíveis.
 
 \subsection{Parser de STRIPS para Json}
 \label{subsec:stripsjson}
